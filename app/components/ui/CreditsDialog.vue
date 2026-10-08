@@ -23,6 +23,18 @@ const linkify = (s: string) => s.split(/(https?:\/\/\S+?)(?=[),.]?(?:\s|$))/g)
     </section>
 
     <section>
+      <h3>Code and citation</h3>
+      <p>
+        Source code: <a href="https://github.com/IntoTheDigital/hearsay-harbour" target="_blank" rel="noopener">github.com/IntoTheDigital/hearsay-harbour</a>
+        <br>
+        Archived on Zenodo: <a href="https://doi.org/10.5281/zenodo.23237554" target="_blank" rel="noopener">doi.org/10.5281/zenodo.23237554</a>
+        <span class="soft">(always the latest version)</span>
+        <br>
+        Play online: <a href="https://intothedigital.github.io/hearsay-harbour/" target="_blank" rel="noopener">intothedigital.github.io/hearsay-harbour</a>
+      </p>
+    </section>
+
+    <section>
       <h3>Original game</h3>
       <p>
         The look and feel, and some of the code, come from

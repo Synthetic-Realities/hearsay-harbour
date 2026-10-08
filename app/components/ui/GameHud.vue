@@ -78,9 +78,10 @@ onMounted(() => {
 onBeforeUnmount(() => clearInterval(nagTimer))
 
 function toggleMute() {
-  unlockAudio()
   game.muted = !game.muted
   setMuted(game.muted)
+  // Turning sound on also switches it onto the media channel, so it plays with a phone on silent.
+  if (!game.muted) unlockAudio()
 }
 // On phones the satchel starts folded so it doesn't cover the island.
 const satchelOpen = ref(window.innerWidth > 640)

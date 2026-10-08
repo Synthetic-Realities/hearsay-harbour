@@ -7,6 +7,7 @@ const props = defineProps<{ title: string, wide?: boolean, kicker?: string }>()
 const emit = defineEmits<{ close: [] }>()
 const el = ref<HTMLDialogElement>()
 const titleId = useId()
+const body = ref<HTMLElement>()
 
 onMounted(() => el.value?.showModal())
 
@@ -42,8 +43,11 @@ function onCancel(ev: Event) {
           <UiIcon name="close" />
         </button>
       </header>
-      <div class="body">
-        <slot />
+      <div class="body-wrap">
+        <div ref="body" class="body">
+          <slot />
+        </div>
+        <ScrollRail :target="body" />
       </div>
       <footer v-if="$slots.footer">
         <slot name="footer" />
@@ -117,9 +121,24 @@ h2 {
   width: 22px;
   height: 22px;
 }
+.body-wrap {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+}
 .body {
+  flex: 1;
+  min-width: 0;
   padding: 4px 24px 20px;
   overflow: auto;
+  -webkit-overflow-scrolling: touch;
+}
+/* Touch screens get the green rail (see ScrollRail); make room for it. */
+@media (pointer: coarse) {
+  .body {
+    padding-right: 30px;
+  }
 }
 footer {
   display: flex;

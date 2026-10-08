@@ -25,12 +25,62 @@ function ensure() {
   return ctx
 }
 
-/** Call from a user gesture so the browser lets audio start. */
+/*
+ * Phones on silent: iPhones mute Web Audio when the ring/silent switch is on, but let media
+ * play (that's why videos still have sound). Asking for a "playback" audio session, and keeping
+ * a silent looping media element running, moves the game's sound onto that media channel.
+ */
+let keepAlive: HTMLAudioElement | null = null
+
+function silentWavUrl(seconds = 1, rate = 8000) {
+  const n = seconds * rate
+  const buf = new ArrayBuffer(44 + n)
+  const v = new DataView(buf)
+  const str = (o: number, t: string) => [...t].forEach((ch, i) => v.setUint8(o + i, ch.charCodeAt(0)))
+  str(0, 'RIFF')
+  v.setUint32(4, 36 + n, true)
+  str(8, 'WAVE')
+  str(12, 'fmt ')
+  v.setUint32(16, 16, true)
+  v.setUint16(20, 1, true) // PCM
+  v.setUint16(22, 1, true) // mono
+  v.setUint32(24, rate, true)
+  v.setUint32(28, rate, true)
+  v.setUint16(32, 1, true)
+  v.setUint16(34, 8, true) // 8-bit
+  str(36, 'data')
+  v.setUint32(40, n, true)
+  new Uint8Array(buf, 44).fill(128) // 8-bit silence
+  return URL.createObjectURL(new Blob([buf], { type: 'audio/wav' }))
+}
+
+function useMediaChannel() {
+  try {
+    const session = (navigator as Navigator & { audioSession?: { type: string } }).audioSession
+    if (session) session.type = 'playback'
+  }
+  catch {}
+  try {
+    if (!keepAlive) {
+      keepAlive = document.createElement('audio')
+      keepAlive.setAttribute('playsinline', '')
+      keepAlive.setAttribute('x-webkit-airplay', 'deny')
+      keepAlive.loop = true
+      keepAlive.preload = 'auto'
+      keepAlive.src = silentWavUrl()
+    }
+    void keepAlive.play().catch(() => {})
+  }
+  catch {}
+}
+
+/** Call from a user gesture so the browser lets audio start (even with a phone on silent). */
 export function unlockAudio() {
   // Sound is a nice extra: if the browser or an embedding frame refuses audio, play on silently.
+  if (!muted) useMediaChannel()
   try {
     const c = ensure()
-    if (c?.state === 'suspended') void c.resume().catch(() => {})
+    if (c && (c.state === 'suspended' || (c.state as string) === 'interrupted')) void c.resume().catch(() => {})
   }
   catch {
     ctx = null
@@ -39,6 +89,7 @@ export function unlockAudio() {
 
 export function setMuted(m: boolean) {
   muted = m
+  if (m) keepAlive?.pause()
   if (master && ctx) master.gain.setTargetAtTime(m ? 0 : 0.7, ctx.currentTime, 0.1)
 }
 

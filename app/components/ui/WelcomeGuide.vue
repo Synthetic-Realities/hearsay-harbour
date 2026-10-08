@@ -30,6 +30,19 @@ const midGame = computed(() => game.records.some(r => r.firstLean) || game.step 
 
 onMounted(() => el.value?.showModal())
 
+// On narrow screens the whole card scrolls; on wide ones just the text column does.
+const sheetEl = ref<HTMLElement>()
+const wordsEl = ref<HTMLElement>()
+const narrow = window.matchMedia('(max-width: 760px)').matches
+const railTarget = computed(() => (narrow ? sheetEl.value : wordsEl.value))
+// Each page starts at the top (focusing the Next button would otherwise scroll to the bottom).
+const toTop = () => nextTick(() => {
+  sheetEl.value?.scrollTo({ top: 0 })
+  wordsEl.value?.scrollTo({ top: 0 })
+})
+onMounted(() => setTimeout(toTop, 0))
+watch(page, toTop)
+
 function go(n: number) {
   page.value = Math.max(0, Math.min(PAGES.length - 1, n))
   sfx.open()
@@ -49,11 +62,12 @@ function onCancel(ev: Event) {
 
 <template>
   <dialog ref="el" class="guide" :aria-labelledby="titleId" @cancel="onCancel" @keydown="onKey">
-    <div class="sheet">
+    <div class="frame">
+    <div ref="sheetEl" class="sheet">
       <div class="art">
         <IslandMap :highlight="highlight" :you="game.pos" />
       </div>
-      <div class="words">
+      <div ref="wordsEl" class="words">
         <p class="kicker">
           {{ cur.kicker }} · {{ page + 1 }} of {{ PAGES.length }}
         </p>
@@ -166,6 +180,8 @@ function onCancel(ev: Event) {
         </div>
       </div>
     </div>
+    <ScrollRail :target="railTarget" />
+    </div>
   </dialog>
 </template>
 
@@ -191,6 +207,9 @@ function onCancel(ev: Event) {
   from {
     transform: scale(0.95) translateY(12px);
   }
+}
+.frame {
+  position: relative;
 }
 .sheet {
   display: grid;
