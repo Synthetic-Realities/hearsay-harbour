@@ -27,7 +27,7 @@ const linkify = (s: string) => s.split(/(https?:\/\/\S+?)(?=[),.]?(?:\s|$))/g)
       <p>
         Source code: <a href="https://github.com/Synthetic-Realities/hearsay-harbour" target="_blank" rel="noopener">github.com/Synthetic-Realities/hearsay-harbour</a>
         <br>
-        Archived on Zenodo: <a href="https://doi.org/10.5281/zenodo.23237554" target="_blank" rel="noopener">doi.org/10.5281/zenodo.23237554</a>
+        Archived on Zenodo: <a href="https://doi.org/10.5281/zenodo.23243671" target="_blank" rel="noopener">doi.org/10.5281/zenodo.23243671</a>
         <span class="soft">(always the latest version)</span>
         <br>
         Play online: <a href="https://synthetic-realities.github.io/hearsay-harbour/" target="_blank" rel="noopener">synthetic-realities.github.io/hearsay-harbour</a>
