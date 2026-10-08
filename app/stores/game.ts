@@ -123,8 +123,9 @@ export const useGame = defineStore('game', {
       return this.record.talked.length + this.record.checked.length
     },
     /**
-     * Where to go next: the board to start or finish a picture, otherwise the nearest place
-     * not yet visited, nudging towards at least one villager and one tool first.
+     * Where to go next: the board to start a picture; otherwise the nearest place not yet
+     * visited (a villager and a tool first), and the board once everywhere has been visited.
+     * Reflecting early is always possible too (see the HUD's "Reflect now").
      */
     suggestion(): PlaceId | null {
       if (!this.started || this.finished || this.dialog) return null
@@ -140,7 +141,6 @@ export const useGame = defineStore('game', {
           return { id, d: Math.hypot(x - this.pos.x, z - this.pos.z) }
         })
         .sort((a, b) => a.d - b.d)[0]?.id ?? null
-      if (this.evidenceCount >= 4) return 'board'
       if (!rec.talked.some(v => v !== 'jim') && people.length) return nearest(people)
       if (!rec.checked.length && tools.length) return nearest(tools)
       const rest = [...people, ...tools, ...(seen.has('jim') ? [] : ['jim' as PlaceId])]

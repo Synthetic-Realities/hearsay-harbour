@@ -51,6 +51,9 @@ async function copy() {
         <p v-if="!onPhone">
           Hearsay Harbour works on phones and tablets: tap to hop, pinch to zoom, drag to look around.
         </p>
+        <a class="big-btn open" :href="PUBLIC_URL" target="_blank" rel="noopener">
+          Open the phone version <UiIcon name="arrow" class="arr" />
+        </a>
         <p class="url">
           <code>{{ PUBLIC_URL }}</code>
           <button class="copy" @click="copy">
@@ -112,6 +115,14 @@ p {
 .soft {
   color: var(--ink-soft);
   font-size: 0.9rem;
+}
+.open {
+  margin: 0 0 12px;
+  text-decoration: none;
+}
+.arr {
+  width: 20px;
+  height: 20px;
 }
 .url {
   display: flex;

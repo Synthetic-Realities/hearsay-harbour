@@ -27,8 +27,8 @@ const nextText = computed(() => {
     case 'done': return 'Pinned! The next picture is coming.'
   }
   const s = game.suggestion
-  if (s === 'board') return 'You have plenty of evidence. Follow the honey trail back to the noticeboard to Reflect.'
-  if (s) return `Next: ${goName(s)}. Follow the honey trail${r.talked.length + r.checked.length ? ', or go back to the board when you\'re ready' : ''}.`
+  if (s === 'board') return 'You\'ve visited everyone. Follow the honey trail back to the noticeboard to Reflect.'
+  if (s) return `Next: ${goName(s)}. Follow the honey trail${r.talked.length + r.checked.length >= 3 ? ', or reflect now if you\'re ready' : ''}.`
   return 'Go back to the board to Reflect.'
 })
 
@@ -52,6 +52,9 @@ const prompt = computed(() => {
   if ((r.talked as string[]).includes(game.at) || (r.checked as string[]).includes(game.at)) return null
   return `${p.verb} ${p.name}`
 })
+
+/** With enough evidence you can always head back and reflect, even with places left to visit. */
+const canReflectEarly = computed(() => game.step === 'investigate' && game.evidenceCount >= 3 && game.suggestion !== 'board')
 
 /** When there's nothing to do here, a big button that walks you to the next place. */
 const next = computed(() => {
@@ -155,9 +158,14 @@ const satchelOpen = ref(window.innerWidth > 640)
         <button v-if="prompt" class="big-btn action" @click="game.use(game.at!)">
           {{ prompt }} <span class="kbd">Space</span>
         </button>
-        <button v-else-if="next" class="big-btn action next-btn" @click="game.goto = next.id">
-          {{ next.label }} <UiIcon name="arrow" class="arr" />
-        </button>
+        <div v-else-if="next" class="end-btns">
+          <button class="big-btn action next-btn" @click="game.goto = next.id">
+            {{ next.label }} <UiIcon name="arrow" class="arr" />
+          </button>
+          <button v-if="canReflectEarly" class="big-btn action quiet" @click="game.goto = 'board'">
+            Reflect now
+          </button>
+        </div>
         <div v-else-if="game.finished && !game.dialog" class="end-btns">
           <button class="big-btn action" @click="game.open({ kind: 'reward' })">
             See your reward
