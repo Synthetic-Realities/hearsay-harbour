@@ -2,6 +2,9 @@
 
 Drop new pictures here to turn them into new levels.
 
+0. **Optional: AI assist.** Copy `.env.example` to `.env`, set your provider, model and key, restart
+   `npm run dev`, and switch on **AI assist** in the Studio. It suggests the title, caption and notes for
+   each picture you drop in; how it was really made is always your choice.
 1. **Add pictures.** Either copy images into this folder, or start the game with `npm run dev` and use
    **Dev Studio: add pictures** on the title screen (it saves the picture and your notes here).
 2. **Say how each one was made.** Next to `flood.jpg`, add `flood.json` (the Studio does this for you):

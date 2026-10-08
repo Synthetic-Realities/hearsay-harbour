@@ -29,6 +29,9 @@ export default defineEventHandler(async (event) => {
     claim: field('claim'),
     source: field('source'),
     madeWith: field('madeWith'),
+    title: field('title'),
+    // Which fields an AI model suggested (provider:model:fields), so the import treats them as drafts.
+    aiAssist: field('aiAssist'),
     notes: field('notes'),
     addedAt: new Date().toISOString(),
   }

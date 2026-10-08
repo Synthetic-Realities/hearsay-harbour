@@ -13,6 +13,9 @@ title screen in `npm run dev`). Each picture `name.ext` may have a sidecar `name
   "source": "Generated for the workshop with an image tool, 2026", "notes": "Point out the railings" }
 ```
 
+If the sidecar has an `aiAssist` value, an AI model suggested some fields in the Studio (listed after
+the last colon): treat those as unchecked drafts, never as facts about where the picture came from.
+
 `truth` is one of `camera`, `edited`, `drawn` (hand-drawn or illustrated by a person), `assisted`, `ai`,
 `unknown`. `madeWith` is the picture's credential shown to players at the reveal (e.g. "ChatGPT (OpenAI
 image generation)" or "Phone camera, by Dr Sam Martin").

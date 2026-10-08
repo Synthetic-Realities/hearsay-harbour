@@ -126,11 +126,20 @@ See `content-inbox/README.md` for the details.
 ### Do I need an API key?
 
 No. Playing, running workshops, and building or editing picture packs by hand need no AI model,
-account or key, and the repository contains no keys and makes no model calls.
+account or key, and the repository contains no keys.
 
-The optional import step is an *agent skill*: a written set of instructions that an AI coding agent
-follows, using whatever model and account that person already has (bring your own). Any agent that
-supports skill files can run it, and the pack files can always be written by hand instead.
+Two optional helpers use AI, and both bring your own:
+
+- **AI assist in the Dev Studio** (local only). Copy `.env.example` to `.env`, choose a provider
+  (`openai`, `gemini`, `anthropic`, or `ollama` for a model running on your own computer), add your own
+  key and a vision-capable model, then switch on **AI assist**. When you drop a picture in, your model
+  suggests its title, caption, notes and any credit visible in the picture, and offers a hunch about how
+  it was made. You always choose how it was really made yourself. `.env` is ignored by git, and the
+  helper only exists in `npm run dev`, never in the published game. Pictures are sent to the provider
+  you choose; with Ollama they never leave your computer.
+- **The import step** is an *agent skill*: a written set of instructions that an AI coding agent follows,
+  using whatever model and account that person already has. Any agent that supports skill files can run
+  it, and the pack files can always be written by hand instead.
 
 ## Credits
 

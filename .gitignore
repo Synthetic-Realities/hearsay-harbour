@@ -13,3 +13,4 @@ dist
 # Pictures waiting to be imported stay private.
 content-inbox/*
 !content-inbox/README.md
+!.env.example
