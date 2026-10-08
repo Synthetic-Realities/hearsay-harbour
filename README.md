@@ -1,6 +1,6 @@
 # Hearsay Harbour
 
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.23237555.svg)](https://doi.org/10.5281/zenodo.23237555)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.23237554.svg)](https://doi.org/10.5281/zenodo.23237554)
 
 **Play it in your browser:** https://intothedigital.github.io/hearsay-harbour/
 
@@ -146,7 +146,7 @@ Every model and sound is made in code.
 
 ## Licence and citation
 
-Code: [MIT](LICENSE). To cite Hearsay Harbour, use the DOI above (that one is v1.0.0;
-[10.5281/zenodo.23237554](https://doi.org/10.5281/zenodo.23237554) always points to the latest version) or [`CITATION.cff`](CITATION.cff)
+Code: [MIT](LICENSE). To cite Hearsay Harbour, use the DOI above, which always points to the latest
+version (each release also has its own DOI on Zenodo), or [`CITATION.cff`](CITATION.cff)
 (GitHub shows a "Cite this repository" button). `.zenodo.json` sets the metadata for Zenodo's GitHub
 integration.
