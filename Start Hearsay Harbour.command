@@ -25,6 +25,9 @@ if lsof -iTCP:$PORT -sTCP:LISTEN >/dev/null 2>&1; then
   exit 0
 fi
 
+# Keep your private AI settings (and any key in them) out of Dropbox's cloud copy.
+[[ -f .env ]] && xattr -w com.dropbox.ignored 1 .env 2>/dev/null
+
 if [[ ! -d node_modules ]]; then
   echo "First run: installing (this takes a minute)…"
   npm install || { read -k1 "?Install failed. Press any key to close."; exit 1 }

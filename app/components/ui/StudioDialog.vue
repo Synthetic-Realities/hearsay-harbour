@@ -253,6 +253,9 @@ async function save() {
           </label>
           <span v-if="aiStatus?.ready" class="soft small">{{ aiStatus.provider }} · {{ aiStatus.model }}</span>
           <span v-else class="soft small">{{ aiStatus?.problem ?? 'Checking…' }}</span>
+          <a class="setup-link" href="https://github.com/IntoTheDigital/hearsay-harbour#setting-up-ai-assist-step-by-step" target="_blank" rel="noopener">
+            {{ aiStatus?.ready ? 'Setup guide' : 'How do I set this up?' }} <span aria-hidden="true">↗</span><span class="sr-only">(opens in a new tab)</span>
+          </a>
           <button v-if="aiOn && file" type="button" class="again" :disabled="aiBusy" @click="suggest">
             {{ aiBusy ? 'Looking…' : 'Suggest again' }}
           </button>
@@ -555,6 +558,11 @@ select {
 }
 .small {
   font-size: 0.85rem;
+}
+.setup-link {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--sea-deep);
 }
 .again {
   margin-left: auto;

@@ -145,6 +145,47 @@ Two optional helpers use AI, and both bring your own:
   using whatever model and account that person already has. Any agent that supports skill files can run
   it, and the pack files can always be written by hand instead.
 
+
+### Setting up AI assist, step by step
+
+No coding needed. You'll edit one small settings file, then restart the game.
+
+1. **Get access to a model.** Choose one:
+   - **OpenAI:** create a key at [platform.openai.com/api-keys](https://platform.openai.com/api-keys).
+   - **Google Gemini:** create a key at [aistudio.google.com/apikey](https://aistudio.google.com/apikey).
+   - **Anthropic:** create a key at [console.anthropic.com](https://console.anthropic.com/settings/keys).
+     If its safety check declines a picture, the request automatically retries on a fallback model.
+   - **Ollama (free, private):** install it from [ollama.com/download](https://ollama.com/download), then
+     download a model that can read images (see [ollama.com/search?c=vision](https://ollama.com/search?c=vision)).
+     The model runs on your own computer, so pictures never leave it and no key is needed. This suits
+     sensitive images.
+2. **Open the settings file.** In Finder, open the `hearsay-harbour` folder and press
+   **Cmd + Shift + .** (full stop) to show hidden files. Open the file called `.env` with TextEdit.
+   If there's no `.env`, duplicate `.env.example` and rename the copy to exactly `.env`.
+   In TextEdit, choose **Format → Make Plain Text** if it offers it.
+3. **Fill in three lines** (everything after the `=`, no spaces or quotation marks), for example:
+
+   ```
+   HH_AI_PROVIDER=gemini
+   HH_AI_MODEL=the-model-name-from-your-provider
+   GEMINI_API_KEY=paste-your-key-here
+   ```
+
+   `HH_AI_PROVIDER` is `openai`, `gemini`, `anthropic` or `ollama`. For `HH_AI_MODEL`, copy a current
+   model name that accepts images from your provider's list:
+   [OpenAI](https://platform.openai.com/docs/models), [Gemini](https://ai.google.dev/gemini-api/docs/models),
+   or the name you downloaded in Ollama. (With Anthropic you can leave it empty.) Put your key on the
+   line for your provider; Ollama needs no key.
+4. **Save and close the file**, then quit the game (close its Terminal window) and start it again
+   from the desktop launcher.
+5. **Switch it on.** Open **Dev Studio: add pictures** on the title screen and turn on **AI assist**.
+   The line next to the switch shows your provider and model. If something's missing, it says what.
+
+**Keeping your key safe.** `.env` stays on your computer: git ignores it, it's never part of the
+published game, and the desktop launcher tells Dropbox not to sync it. Don't paste your key anywhere
+else, and if you think it has leaked, delete it on your provider's website and make a new one.
+Pictures you ask about are sent to the provider you chose (except with Ollama), under that provider's
+terms.
 ## Credits
 
 An academic research project of **Synthetic Realities**, led by **Dr Sam Martin**, Smart Data Research UK
