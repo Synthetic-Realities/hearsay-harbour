@@ -123,6 +123,15 @@ screen lets players choose a level.
 
 See `content-inbox/README.md` for the details.
 
+### Do I need an API key?
+
+No. Playing, running workshops, and building or editing picture packs by hand need no AI model,
+account or key, and the repository contains no keys and makes no model calls.
+
+The optional import step is an *agent skill*: a written set of instructions that an AI coding agent
+follows, using whatever model and account that person already has (bring your own). Any agent that
+supports skill files can run it, and the pack files can always be written by hand instead.
+
 ## Credits
 
 An academic research project of **Synthetic Realities**, led by **Dr Sam Martin**, Smart Data Research UK
