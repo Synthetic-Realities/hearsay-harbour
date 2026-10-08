@@ -21,8 +21,8 @@ keywords:
   - serious games
   - content credentials
 license: MIT
-repository-code: "https://github.com/IntoTheDigital/hearsay-harbour"
-url: "https://intothedigital.github.io/hearsay-harbour/"
+repository-code: "https://github.com/Synthetic-Realities/hearsay-harbour"
+url: "https://synthetic-realities.github.io/hearsay-harbour/"
 version: "1.2.0"
 doi: "10.5281/zenodo.23237554"
 date-released: "2026-10-08"
@@ -33,5 +33,5 @@ references:
       - name: zernonia
     url: "https://github.com/zernonia/hivebound"
     license: MIT
-repository-code: "https://github.com/IntoTheDigital/hearsay-harbour"
-url: "https://intothedigital.github.io/hearsay-harbour/"
+repository-code: "https://github.com/Synthetic-Realities/hearsay-harbour"
+url: "https://synthetic-realities.github.io/hearsay-harbour/"

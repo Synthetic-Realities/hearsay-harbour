@@ -7,7 +7,7 @@ import { useGame } from '~/stores/game'
  * opens full screen like an app and works offline. No app store needed.
  */
 const game = useGame()
-const PUBLIC_URL = 'https://intothedigital.github.io/hearsay-harbour/'
+const PUBLIC_URL = 'https://synthetic-realities.github.io/hearsay-harbour/'
 const qr = renderSVG(PUBLIC_URL, { border: 1, whiteColor: '#fffaf0', blackColor: '#3d3a4b' })
 const onPhone = window.matchMedia('(pointer: coarse)').matches && window.innerWidth < 900
 const installed = window.matchMedia('(display-mode: standalone)').matches

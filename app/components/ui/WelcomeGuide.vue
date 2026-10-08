@@ -233,6 +233,16 @@ function onCancel(ev: Event) {
   padding: 28px 30px 22px;
   overflow: auto;
   min-height: min(560px, calc(100dvh - 24px));
+  /* Short screens (a TV, a landscape phone): the words scroll inside the sheet. */
+  max-height: calc(100dvh - 28px);
+}
+.art :deep(svg) {
+  max-height: calc(100dvh - 76px);
+}
+/* Room for the green rail when there's more to scroll (see ScrollRail). */
+.words.hh-has-rail,
+.sheet.hh-has-rail .words {
+  padding-right: 42px;
 }
 .kicker {
   margin: 0;
@@ -392,6 +402,7 @@ h2 {
   }
   .words {
     min-height: 0;
+    max-height: none;
     overflow: visible;
     padding: 20px 20px 18px;
   }

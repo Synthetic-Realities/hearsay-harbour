@@ -134,11 +134,9 @@ h2 {
   overflow: auto;
   -webkit-overflow-scrolling: touch;
 }
-/* Touch screens get the green rail (see ScrollRail); make room for it. */
-@media (pointer: coarse) {
-  .body {
-    padding-right: 30px;
-  }
+/* When there's more to scroll, the green rail (see ScrollRail) shows; make room for it. */
+.body.hh-has-rail {
+  padding-right: 36px;
 }
 footer {
   display: flex;

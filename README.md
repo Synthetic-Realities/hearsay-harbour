@@ -2,7 +2,7 @@
 
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.23237554.svg)](https://doi.org/10.5281/zenodo.23237554)
 
-**Play it in your browser:** https://intothedigital.github.io/hearsay-harbour/
+**Play it in your browser:** https://synthetic-realities.github.io/hearsay-harbour/
 
 Hearsay Harbour is a cozy island game about working out how a picture was made before you share it.
 It teaches the SDA Vision community workshop method: **Notice → Discuss → Check → Reflect**. It can be
@@ -82,6 +82,9 @@ on Android) installs it like an app: it opens full screen and keeps working offl
 
 <img src="docs/screenshots/phone.png" alt="Playing on a phone" width="300">
 
+On a smart TV, a projector or anything without easy scrolling, every window that has more to show gets a
+green scroll bar with ▲ ▼ buttons, which can be reached with a TV remote's arrow keys or Tab.
+
 ## Running it locally
 
 **On a Mac, double-click `Start Hearsay Harbour.command`.** It installs what it needs the first time,
@@ -95,6 +98,7 @@ npm run dev          # http://localhost:3000
 npm run generate     # static site in .output/public; runs from any folder or host
 npm run validate     # checks every picture pack
 npm run screenshots  # retakes the screenshots in docs/screenshots (needs npm run dev and Chrome)
+npm run screenshots:studio  # retakes the Dev Studio screenshots (needs Chrome; spends no AI credits)
 ```
 
 Every push to `main` rebuilds the site and publishes it to GitHub Pages (`.github/workflows/pages.yml`).
@@ -134,6 +138,18 @@ then choose **Dev Studio** on the title screen). It has three tabs:
    `content-inbox/removed/`, and replaced pictures in `content-inbox/replaced/`, so nothing is lost).
 
 Reload the game to play your changes.
+
+#### The Dev Studio in pictures
+
+| | |
+|---|---|
+| ![Add a picture: AI assist suggests a title and offers a hunch, but you choose how it was made](docs/screenshots/studio-add.png) | ![The rest of the form: where it goes, the caption, credential and notes, with AI suggestions marked](docs/screenshots/studio-add-details.png) |
+| ![Not sure? The second-opinion panel for Gemini (SynthID) and OpenAI's image verifier](docs/screenshots/studio-second-opinion.png) | ![The inbox, ready to import into the game](docs/screenshots/studio-inbox.png) |
+| ![Pictures in the game, each Visible or Not visible in game, with Edit, Play it and Remove](docs/screenshots/studio-pictures.png) | ![The Edit screen: drag the spots to notice, change the caption, credential and verdict](docs/screenshots/studio-edit.png) |
+
+The AI suggestions in these screenshots are illustrative examples. To retake them (for slides, say), run
+`npm run screenshots:studio`: it starts its own copy of the game wired to a pretend model, so it spends
+no AI credits, and it tidies up the example picture it adds to the inbox.
 
 **Prefer an AI coding agent?** The same import is also written as an agent skill
 (`.claude/skills/import-pictures/SKILL.md`) that any coding agent supporting skill files can run with

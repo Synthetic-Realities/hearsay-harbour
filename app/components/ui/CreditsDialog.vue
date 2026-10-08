@@ -25,12 +25,12 @@ const linkify = (s: string) => s.split(/(https?:\/\/\S+?)(?=[),.]?(?:\s|$))/g)
     <section>
       <h3>Code and citation</h3>
       <p>
-        Source code: <a href="https://github.com/IntoTheDigital/hearsay-harbour" target="_blank" rel="noopener">github.com/IntoTheDigital/hearsay-harbour</a>
+        Source code: <a href="https://github.com/Synthetic-Realities/hearsay-harbour" target="_blank" rel="noopener">github.com/Synthetic-Realities/hearsay-harbour</a>
         <br>
         Archived on Zenodo: <a href="https://doi.org/10.5281/zenodo.23237554" target="_blank" rel="noopener">doi.org/10.5281/zenodo.23237554</a>
         <span class="soft">(always the latest version)</span>
         <br>
-        Play online: <a href="https://intothedigital.github.io/hearsay-harbour/" target="_blank" rel="noopener">intothedigital.github.io/hearsay-harbour</a>
+        Play online: <a href="https://synthetic-realities.github.io/hearsay-harbour/" target="_blank" rel="noopener">synthetic-realities.github.io/hearsay-harbour</a>
       </p>
     </section>
 

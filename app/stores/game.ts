@@ -19,6 +19,8 @@ export interface PictureRecord {
   pebbles: Pebble[]
   talked: VillagerId[]
   checked: CheckId[]
+  /** Places opened for this picture, finished or not (so hints move on after "Maybe later"). */
+  opened?: string[]
   label: Label | null
   caption: Caption | null
   sharedEarly: boolean
@@ -58,6 +60,7 @@ const blankRecord = (p: Picture): PictureRecord => ({
   pebbles: [],
   talked: [],
   checked: [],
+  opened: [],
   label: null,
   caption: null,
   sharedEarly: false,
@@ -134,9 +137,10 @@ export const useGame = defineStore('game', {
       if (this.step === 'notice') return 'board'
       if (this.step !== 'investigate') return null
       const rec = this.record
-      const seen = new Set<string>([...rec.talked, ...rec.checked])
+      const seen = new Set<string>([...rec.talked, ...rec.checked, ...(rec.opened ?? [])])
       const people = (['wren', 'pip', 'moss'] as PlaceId[]).filter(id => !seen.has(id))
-      const tools = (['tide', 'seal', 'crate'] as PlaceId[]).filter(id => !seen.has(id))
+      // The tide search is optional: it's never part of the hint chain.
+      const tools = (['seal', 'crate'] as PlaceId[]).filter(id => !seen.has(id))
       const nearest = (ids: PlaceId[]) => ids
         .map((id) => {
           const { x, z } = hexToWorld(PLACE_BY_ID[id].door)
@@ -263,6 +267,9 @@ export const useGame = defineStore('game', {
         this.goto = 'board'
         return
       }
+      const rec = this.record
+      rec.opened ??= []
+      if (!rec.opened.includes(place)) rec.opened.push(place)
       if (isVillager(place)) this.open({ kind: 'talk', who: place })
       else this.open({ kind: 'check', id: place })
     },

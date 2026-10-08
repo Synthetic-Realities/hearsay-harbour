@@ -207,11 +207,12 @@ function syncMarkers() {
   if (game.step === 'notice') return island.setMarkers([], 'board')
   if (game.step !== 'investigate') return island.setMarkers([], null)
   const rec = game.record
-  const todo = (['wren', 'pip', 'moss', 'tide', 'seal', 'crate'] as PlaceId[])
-    .filter(id => !rec.talked.includes(id as never) && !rec.checked.includes(id as never))
+  // Diamonds mark places not yet opened for this picture (the optional tide search has none).
+  const todo = (['wren', 'pip', 'moss', 'jim', 'seal', 'crate'] as PlaceId[])
+    .filter(id => !rec.talked.includes(id as never) && !rec.checked.includes(id as never) && !(rec.opened ?? []).includes(id))
   island.setMarkers(todo, game.suggestion)
 }
-watch(() => [game.step, game.started, game.evidenceCount, game.index, game.suggestion], syncMarkers, { immediate: true, deep: true })
+watch(() => [game.step, game.started, game.evidenceCount, game.index, game.suggestion, game.record.opened?.length], syncMarkers, { immediate: true, deep: true })
 
 /* ------------------------------------------------------------------ */
 /* End-of-day festival: fireworks over the harbour                    */

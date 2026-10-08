@@ -11,6 +11,8 @@ function start(workshop: boolean) {
   unlockAudio()
   game.start(workshop, packId.value)
 }
+// On a short screen (or a TV) the card scrolls, with the green rail to move it.
+const card = ref<HTMLElement>()
 function resume() {
   unlockAudio()
   game.resume()
@@ -19,56 +21,59 @@ function resume() {
 
 <template>
   <div class="title">
-    <div class="card panel">
-      <p class="kicker">
-        An SDA Vision community game
-      </p>
-      <h1>Hearsay<br>Harbour</h1>
-      <p class="tag-line hand">
-        Notice · Discuss · Check · Reflect
-      </p>
-      <p class="blurb">
-        A cozy island where pictures wash up all day. Can you work out how each one was made before the gull gets everyone sharing?
-      </p>
-      <div v-if="PACKS.length > 1" class="levels" role="radiogroup" aria-label="Choose a level">
-        <button
-          v-for="p in PACKS"
-          :key="p.id"
-          role="radio"
-          :aria-checked="packId === p.id"
-          class="level"
-          :class="{ on: packId === p.id }"
-          @click="packId = p.id"
-        >
-          <strong>Level {{ p.level }} · {{ p.title }}</strong>
-          <span>{{ p.blurb }}</span>
-        </button>
+    <div class="card-wrap panel">
+      <div ref="card" class="card">
+        <p class="kicker">
+          An SDA Vision community game
+        </p>
+        <h1>Hearsay<br>Harbour</h1>
+        <p class="tag-line hand">
+          Notice · Discuss · Check · Reflect
+        </p>
+        <p class="blurb">
+          A cozy island where pictures wash up all day. Can you work out how each one was made before the gull gets everyone sharing?
+        </p>
+        <div v-if="PACKS.length > 1" class="levels" role="radiogroup" aria-label="Choose a level">
+          <button
+            v-for="p in PACKS"
+            :key="p.id"
+            role="radio"
+            :aria-checked="packId === p.id"
+            class="level"
+            :class="{ on: packId === p.id }"
+            @click="packId = p.id"
+          >
+            <strong>Level {{ p.level }} · {{ p.title }}</strong>
+            <span>{{ p.blurb }}</span>
+          </button>
+        </div>
+        <div class="buttons">
+          <button v-if="game.hasSave" class="big-btn" autofocus @click="resume">
+            Continue your day
+          </button>
+          <button class="big-btn" :class="{ quiet: game.hasSave }" :autofocus="!game.hasSave" @click="start(false)">
+            {{ game.hasSave ? 'Start a new day' : 'Play' }}
+          </button>
+          <button class="big-btn quiet" @click="start(true)">
+            <UiIcon name="people" class="ic" /> Run a workshop
+          </button>
+        </div>
+        <p class="small">
+          Workshop mode adds facilitator prompts and show-of-hands voting for a room.
+        </p>
+        <div class="links">
+          <button class="link" @click="game.open({ kind: 'phone' })">
+            Play on your phone
+          </button>
+          <button class="link" @click="game.open({ kind: 'credits' })">
+            Credits
+          </button>
+          <button v-if="dev" class="studio" @click="game.open({ kind: 'studio' })">
+            Dev Studio: add pictures
+          </button>
+        </div>
       </div>
-      <div class="buttons">
-        <button v-if="game.hasSave" class="big-btn" autofocus @click="resume">
-          Continue your day
-        </button>
-        <button class="big-btn" :class="{ quiet: game.hasSave }" :autofocus="!game.hasSave" @click="start(false)">
-          {{ game.hasSave ? 'Start a new day' : 'Play' }}
-        </button>
-        <button class="big-btn quiet" @click="start(true)">
-          <UiIcon name="people" class="ic" /> Run a workshop
-        </button>
-      </div>
-      <p class="small">
-        Workshop mode adds facilitator prompts and show-of-hands voting for a room.
-      </p>
-      <div class="links">
-        <button class="link" @click="game.open({ kind: 'phone' })">
-          Play on your phone
-        </button>
-        <button class="link" @click="game.open({ kind: 'credits' })">
-          Credits
-        </button>
-        <button v-if="dev" class="studio" @click="game.open({ kind: 'studio' })">
-          Dev Studio: add pictures
-        </button>
-      </div>
+      <ScrollRail :target="card" />
     </div>
   </div>
 </template>
@@ -82,12 +87,22 @@ function resume() {
   padding: 16px;
   background: radial-gradient(ellipse at center, rgba(255, 250, 240, 0) 30%, rgba(255, 231, 194, 0.55) 100%);
 }
-.card {
+.card-wrap {
+  position: relative;
+  display: flex;
   max-width: 420px;
-  padding: 28px 30px 30px;
-  text-align: center;
+  max-height: calc(100dvh - 32px);
   border-radius: 32px;
   animation: float 5s ease-in-out infinite;
+}
+.card {
+  min-height: 0;
+  padding: 28px 30px 30px;
+  text-align: center;
+  overflow: auto;
+}
+.card.hh-has-rail {
+  padding-right: 40px;
 }
 @keyframes float {
   50% {

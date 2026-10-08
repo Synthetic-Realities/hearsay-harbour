@@ -14,7 +14,8 @@
     "postinstall": "nuxt prepare",
     "typecheck": "nuxt typecheck",
     "validate": "node scripts/validate-packs.mjs",
-    "screenshots": "node --experimental-websocket scripts/screenshots.mjs"
+    "screenshots": "node --experimental-websocket scripts/screenshots.mjs",
+    "screenshots:studio": "node --experimental-websocket scripts/studio-screenshots.mjs"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.132.1",
