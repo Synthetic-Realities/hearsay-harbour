@@ -24,6 +24,8 @@ license: MIT
 repository-code: "https://github.com/IntoTheDigital/hearsay-harbour"
 url: "https://intothedigital.github.io/hearsay-harbour/"
 version: "1.0.0"
+doi: "10.5281/zenodo.23237555"
+date-released: "2026-10-08"
 references:
   - type: software
     title: Hivebound

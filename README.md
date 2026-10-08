@@ -1,5 +1,7 @@
 # Hearsay Harbour
 
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.23237555.svg)](https://doi.org/10.5281/zenodo.23237555)
+
 **Play it:** https://intothedigital.github.io/hearsay-harbour/
 
 A cozy island game about working out how a picture was made before you share it.
