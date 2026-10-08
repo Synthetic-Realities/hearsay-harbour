@@ -46,7 +46,7 @@ for (const f of readdirSync(packsDir).filter(f => f.endsWith('.json'))) {
     }
     need(Array.isArray(p.cues) && p.cues.length >= 2 && p.cues.length <= 5, at, 'needs 2 to 5 cues')
     for (const q of p.cues ?? []) need(q.x >= 0 && q.x <= 1 && q.y >= 0 && q.y <= 1 && text(q.note), at, `cue "${q.note}" needs x and y between 0 and 1`)
-    if (p.status) need(['draft', 'reviewed'].includes(p.status), at, 'status must be draft or reviewed')
+    if (p.visible !== undefined) need(typeof p.visible === 'boolean', at, 'visible must be true or false')
   }
 }
 

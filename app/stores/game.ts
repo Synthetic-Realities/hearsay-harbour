@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import { type CheckId, type Label, type Lean, PACKS, type Picture, type VillagerId, isVillager, packById } from '~/utils/content'
+import { type CheckId, type Label, type Lean, PACKS, type Pack, type Picture, type VillagerId, isVillager, packById } from '~/utils/content'
 import { PLACE_BY_ID, type PlaceId } from '~/utils/world'
 import { hexToWorld } from '~/utils/hex'
 
@@ -105,16 +105,18 @@ export const useGame = defineStore('game', {
     recentre: 0,
     /** The puffin's spot on the island (world x, z), for the map. */
     pos: { x: 0, z: 0 },
+    /** Dev Studio preview: a single picture played on its own (never saved). */
+    preview: null as Pack | null,
     /** Workshop mode: a facilitator runs the game for a room, with show-of-hands votes. */
     workshop: false,
     /** Whether there's a saved day to continue from the title screen. */
     hasSave: false,
   }),
   getters: {
-    pack: s => packById(s.packId),
-    pictures: s => packById(s.packId).pictures,
+    pack: s => (s.preview as Pack | null) ?? packById(s.packId),
+    pictures: s => ((s.preview as Pack | null) ?? packById(s.packId)).pictures,
     picture: s => {
-      const pics = packById(s.packId).pictures
+      const pics = ((s.preview as Pack | null) ?? packById(s.packId)).pictures
       return pics[Math.min(s.index, pics.length - 1)]!
     },
     record: s => s.records[Math.min(s.index, s.records.length - 1)]!,
@@ -159,7 +161,16 @@ export const useGame = defineStore('game', {
     close() {
       this.dialog = null
     },
+    /** Dev Studio "Play it": a one-picture day, even for a picture that isn't visible yet. Not saved. */
+    startPreview(picture: Picture, levelTitle: string) {
+      this.preview = { id: '__preview', level: 0, title: `Preview · ${levelTitle}`, blurb: '', pictures: [picture] }
+      this.restart()
+      this.workshop = false
+      this.started = true
+      this.dialog = null
+    },
     start(workshop = false, packId?: string) {
+      this.preview = null
       this.packId = packById(packId ?? this.packId).id
       this.restart()
       this.workshop = workshop
@@ -169,6 +180,10 @@ export const useGame = defineStore('game', {
     /** Back to the opening screen. The day is saved, so "Continue your day" picks it up again. */
     goHome() {
       this.save()
+      if (this.preview) {
+        this.preview = null
+        this.restart()
+      }
       this.dialog = null
       this.started = false
       this.at = null
@@ -182,7 +197,7 @@ export const useGame = defineStore('game', {
       if (this.step === 'done' && !this.finished) this.step = 'arriving'
     },
     save() {
-      if (!this.started) return
+      if (!this.started || this.preview) return
       try {
         const { packId, index, step, records, trust, workshop, muted } = this
         localStorage.setItem(SAVE_KEY, JSON.stringify({ packId, index, step, records, trust, workshop, muted }))

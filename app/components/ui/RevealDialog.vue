@@ -93,9 +93,6 @@ onMounted(() => {
             </p>
           </div>
         </div>
-        <p v-if="pic.status === 'draft'" class="draft">
-          Draft picture: written by the import pipeline and not yet checked by a person.
-        </p>
         <p class="verdict">
           {{ pic.verdict }}
         </p>

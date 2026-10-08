@@ -88,12 +88,29 @@ export async function removePicture(packId: string, pictureId: string) {
   return { keptIn: kept.slice(studioPaths().root.length + 1) }
 }
 
-export async function setStatus(packId: string, pictureId: string, status: 'draft' | 'reviewed') {
+export async function setVisible(packId: string, pictureId: string, visible: boolean) {
   const pack = (await readPacks()).find(p => p.data.id === packId)
   const pic = pack?.data.pictures.find(x => x.id === pictureId)
   if (!pack || !pic) throw createError({ statusCode: 404, statusMessage: 'That picture isn\'t in the game.' })
-  pic.status = status
+  pic.visible = visible
   await writePack(pack)
+}
+
+/** Save an edited picture (the Studio's Edit screen). The picture's id and file stay the same. */
+export async function updatePicture(packId: string, edited: Record<string, any>) {
+  const pack = (await readPacks()).find(p => p.data.id === packId)
+  const i = pack?.data.pictures.findIndex(x => x.id === edited?.id) ?? -1
+  if (!pack || i < 0) throw createError({ statusCode: 404, statusMessage: 'That picture isn\'t in the game.' })
+  const old = pack.data.pictures[i]!
+  const next: Record<string, any> = { ...old, ...edited, id: old.id, src: old.src }
+  for (const k of ['madeWith', 'source', 'title']) if (typeof next[k] === 'string' && !next[k].trim()) delete next[k]
+  for (const c of CHECKS) if (next.checks?.[c] && !LEANS.includes(next.checks[c].points)) delete next.checks[c].points
+  next.close = (next.close ?? []).filter((l: string) => l !== next.truth)
+  const problems = problemsWith(next)
+  if (problems.length) throw createError({ statusCode: 422, statusMessage: `Not saved: ${problems.join('; ')}.` })
+  pack.data.pictures[i] = next
+  await writePack(pack)
+  return next
 }
 
 /* ------------------------------------------------------------------ */
@@ -257,7 +274,8 @@ export async function importPicture(file: string) {
     verdict: entry.verdict,
     lesson: entry.lesson,
     ...(side.source ? { source: side.source } : {}),
-    status: 'draft',
+    // New pictures wait in a holding phase until you make them visible.
+    visible: false,
   }
   const problems = problemsWith(picture)
   if (problems.length) throw createError({ statusCode: 422, statusMessage: `The draft wasn't complete (${problems.slice(0, 3).join('; ')}). Try importing again.` })

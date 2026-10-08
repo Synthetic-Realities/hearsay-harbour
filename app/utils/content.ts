@@ -138,7 +138,8 @@ export interface Picture {
   /** Where the picture really came from, for facilitators and the credits. */
   source?: string
   /** `draft` entries came from the import pipeline and still need a human check. */
-  status?: 'reviewed' | 'draft'
+  /** Hidden pictures wait in a holding phase: they're not in the game until made visible. */
+  visible?: boolean
 }
 
 export interface Pack {
@@ -156,7 +157,8 @@ export interface Pack {
  */
 const packFiles = import.meta.glob<Pack>('../packs/*.json', { eager: true, import: 'default' })
 export const PACKS: Pack[] = Object.values(packFiles)
-  .filter(p => p.pictures?.length)
+  .map(p => ({ ...p, pictures: (p.pictures ?? []).filter(pic => pic.visible !== false) }))
+  .filter(p => p.pictures.length)
   .sort((a, b) => a.level - b.level || a.title.localeCompare(b.title))
 
 export const packById = (id: string) => PACKS.find(p => p.id === id) ?? PACKS[0]!

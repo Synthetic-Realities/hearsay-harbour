@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { PACKS, pictureUrl } from '~/utils/content'
+import { PACKS, type Picture, pictureUrl } from '~/utils/content'
 import { useGame } from '~/stores/game'
 
 /*
@@ -21,7 +21,9 @@ const levelTitle = ref('')
 const levelBlurb = ref('')
 const packId = ref(PACKS[0]?.id ?? '')
 const replaces = ref('')
-const pack = computed(() => PACKS.find(p => p.id === packId.value))
+// Levels and pictures straight from disk, so hidden pictures can be replaced too.
+const allPacks = computed(() => gamePacks.value.length ? gamePacks.value : PACKS)
+const pack = computed(() => allPacks.value.find(p => p.id === packId.value))
 const replacedPic = computed(() => pack.value?.pictures.find(p => p.id === replaces.value))
 watch(packId, () => (replaces.value = ''))
 
@@ -76,7 +78,7 @@ const tab = ref<'add' | 'inbox' | 'game'>('add')
 const TRUTH_NAMES: Record<string, string> = { camera: 'Camera-made', edited: 'Edited photo', drawn: 'Hand-drawn or illustrated', assisted: 'AI-assisted', ai: 'AI-generated', unknown: 'Don\'t know yet' }
 function destination(n: Record<string, any> | null) {
   const t = n?.target
-  const pack = PACKS.find(p => p.id === t?.packId)
+  const pack = allPacks.value.find(p => p.id === t?.packId)
   if (t?.mode === 'replace') return `replaces "${pack?.pictures.find(x => x.id === t.replaces)?.title ?? t.replaces}" in Level ${pack?.level ?? '?'}`
   if (t?.mode === 'add') return `adds to Level ${pack?.level ?? '?'}${pack ? ` · ${pack.title}` : ''}`
   return `new Level ${n?.level ?? '?'}${t?.levelTitle ? ` · ${t.levelTitle}` : ''}`
@@ -112,7 +114,8 @@ async function importInbox(file: string) {
 const lastImported = ref('')
 
 // Pictures in the game.
-const gamePacks = ref<{ id: string, level: number, title: string, pictures: { id: string, title: string, src: string, truth: string, status: string }[] }[]>([])
+const gamePacks = ref<{ id: string, level: number, title: string, blurb: string, pictures: (Picture & { visible: boolean })[] }[]>([])
+const editing = ref<{ packId: string, picture: Picture } | null>(null)
 const confirmRemove = ref('')
 const gameMessage = ref('')
 async function loadPacks() {
@@ -124,10 +127,21 @@ async function removeFromGame(packId: string, pictureId: string) {
   gameMessage.value = `Removed. A copy is kept in ${res.keptIn}. Reload the game to see the change.`
   await loadPacks()
 }
-async function setStatus(packId: string, pictureId: string, status: 'draft' | 'reviewed') {
-  await $fetch('/api/packs/status', { method: 'POST', body: { packId, pictureId, status } })
+async function setVisible(packId: string, pictureId: string, visible: boolean) {
+  await $fetch('/api/packs/visible', { method: 'POST', body: { packId, pictureId, visible } })
+  gameMessage.value = visible ? 'Now visible in the game. Reload the game to play it.' : 'Taken out of the game (it stays here, in a holding phase).'
   await loadPacks()
 }
+function onEdited() {
+  editing.value = null
+  gameMessage.value = 'Saved. Reload the game to see the changes.'
+  void loadPacks()
+}
+/** Play just this picture, even if it isn't visible yet. */
+function playIt(picture: Picture, levelTitle: string) {
+  game.startPreview(JSON.parse(JSON.stringify(picture)), levelTitle)
+}
+onMounted(loadPacks)
 watch(tab, (t) => {
   if (t === 'game') void loadPacks()
   if (t === 'inbox') void refresh()
@@ -365,38 +379,55 @@ async function save() {
       <p class="soft small">
         Changes here apply straight away (reload the game to play them). Removed pictures are kept in <code>content-inbox/removed/</code>, so they can be put back.
       </p>
-      <div v-for="p in gamePacks" :key="p.id" class="level-group">
-        <h3>Level {{ p.level }} · {{ p.title }}</h3>
-        <p v-if="!p.pictures.length" class="soft small">
-          No pictures left in this level.
-        </p>
-        <article v-for="x in p.pictures" :key="x.id" class="item">
-          <img :src="pictureUrl(x.src)" alt="">
-          <div class="item-words">
-            <strong>{{ x.title }}</strong>
-            <span class="soft small">{{ TRUTH_NAMES[x.truth] ?? x.truth }} · <span class="status" :class="x.status">{{ x.status === 'draft' ? 'Draft' : 'Reviewed' }}</span></span>
-          </div>
-          <div class="item-actions">
-            <template v-if="confirmRemove === `${p.id}/${x.id}`">
-              <span class="small">Remove from the game? A copy is kept.</span>
-              <button type="button" class="big-btn quiet" @click="removeFromGame(p.id, x.id)">
-                Yes, remove
-              </button>
-              <button type="button" class="again" @click="confirmRemove = ''">
-                Keep it
-              </button>
-            </template>
-            <template v-else>
-              <button type="button" class="again" @click="setStatus(p.id, x.id, x.status === 'draft' ? 'reviewed' : 'draft')">
-                {{ x.status === 'draft' ? 'Mark reviewed' : 'Mark as draft' }}
-              </button>
-              <button type="button" class="again danger" @click="confirmRemove = `${p.id}/${x.id}`">
-                Remove from game
-              </button>
-            </template>
-          </div>
-        </article>
-      </div>
+      <PictureEditor
+        v-if="editing"
+        :pack-id="editing.packId"
+        :picture="editing.picture"
+        @saved="onEdited"
+        @cancel="editing = null"
+      />
+      <template v-else>
+        <div v-for="p in gamePacks" :key="p.id" class="level-group">
+          <h3>Level {{ p.level }} · {{ p.title }}</h3>
+          <p v-if="!p.pictures.length" class="soft small">
+            No pictures left in this level.
+          </p>
+          <article v-for="x in p.pictures" :key="x.id" class="item" :class="{ hidden: !x.visible }">
+            <img :src="pictureUrl(x.src)" alt="">
+            <div class="item-words">
+              <strong>{{ x.title ?? x.id }}</strong>
+              <span class="soft small">{{ TRUTH_NAMES[x.truth] ?? x.truth }}</span>
+              <label class="switch vis" :for="`vis-${p.id}-${x.id}`">
+                <input :id="`vis-${p.id}-${x.id}`" type="checkbox" role="switch" :checked="x.visible" @change="setVisible(p.id, x.id, ($event.target as HTMLInputElement).checked)">
+                <span class="knob" aria-hidden="true" />
+                <span class="small">{{ x.visible ? 'Visible in game' : 'Not visible in game' }}</span>
+              </label>
+            </div>
+            <div class="item-actions">
+              <template v-if="confirmRemove === `${p.id}/${x.id}`">
+                <span class="small">Remove from the game? A copy is kept.</span>
+                <button type="button" class="big-btn quiet" @click="removeFromGame(p.id, x.id)">
+                  Yes, remove
+                </button>
+                <button type="button" class="again" @click="confirmRemove = ''">
+                  Keep it
+                </button>
+              </template>
+              <template v-else>
+                <button type="button" class="again" @click="editing = { packId: p.id, picture: JSON.parse(JSON.stringify(x)) }">
+                  Edit
+                </button>
+                <button type="button" class="again" @click="playIt(x, p.title)">
+                  Play it
+                </button>
+                <button type="button" class="again danger" @click="confirmRemove = `${p.id}/${x.id}`">
+                  Remove
+                </button>
+              </template>
+            </div>
+          </article>
+        </div>
+      </template>
       <p v-if="gameMessage" class="msg ok" role="status">
         {{ gameMessage }}
       </p>
@@ -504,7 +535,7 @@ async function save() {
           <div v-else class="dest-fields">
             <label for="studio-pack">Level</label>
             <select id="studio-pack" v-model="packId">
-              <option v-for="p in PACKS" :key="p.id" :value="p.id">
+              <option v-for="p in allPacks" :key="p.id" :value="p.id">
                 Level {{ p.level }} · {{ p.title }} ({{ p.pictures.length }} pictures)
               </option>
             </select>
@@ -515,7 +546,7 @@ async function save() {
                   Choose a picture…
                 </option>
                 <option v-for="p in pack.pictures" :key="p.id" :value="p.id">
-                  {{ p.title ?? p.id }}
+                  {{ p.title ?? p.id }}{{ (p as Picture).visible === false ? ' (not visible)' : '' }}
                 </option>
               </select>
               <div v-if="replacedPic" class="replacing">
@@ -644,6 +675,12 @@ async function save() {
 .status.reviewed {
   color: var(--leaf-deep);
   font-weight: 600;
+}
+.item.hidden img {
+  opacity: 0.45;
+}
+.switch.vis {
+  margin-top: 4px;
 }
 .level-group h3 {
   margin: 8px 0 6px;

@@ -24,9 +24,10 @@ Drop new pictures here to turn them into new levels.
    The Studio also asks **where it goes**: a new level, an existing level, or in place of an existing
    picture. Replacing keeps a copy of the old picture in `replaced/`.
 3. **Import.** In the Studio's **Inbox** tab, choose **Import into the game**. Your AI assist model
-   drafts the entry and a second pass checks it. It lands in the right level as a `"status": "draft"`,
-   and the files move to `imported/`. (Developers can run the `/import-pictures` agent skill instead.)
-4. **Review.** Play the level, then **Mark reviewed** in the **Pictures in the game** tab. Remove a
-   picture there too; a copy is kept in `removed/`. Deleted inbox pictures go to `deleted/`.
+   drafts the entry and a second pass checks it. It lands in the right level, **not visible in game**
+   yet, and the files move to `imported/`. (Developers can run the `/import-pictures` agent skill instead.)
+4. **Check it and switch it on.** In the **Pictures in the game** tab, **Play it** to try it, **Edit**
+   anything you'd change, then switch it to **Visible in game**. Remove a picture there too; a copy is
+   kept in `removed/`. Deleted inbox pictures go to `deleted/`.
 
 Pictures in this folder are not published with the game and are ignored by git.

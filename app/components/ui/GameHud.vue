@@ -97,6 +97,7 @@ const satchelOpen = ref(window.innerWidth > 640)
         <p class="where">
           <strong>Picture {{ Math.min(game.index + 1, game.pictures.length) }} of {{ game.pictures.length }}</strong>
           <span v-if="game.workshop" class="ws">Workshop</span>
+          <span v-if="game.preview" class="ws">Preview · not saved</span>
         </p>
         <ol class="steps" aria-label="Steps for this picture">
           <li v-for="s in steps" :key="s.id" :class="{ done: s.done, now: s.now }">

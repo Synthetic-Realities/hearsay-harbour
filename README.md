@@ -124,9 +124,13 @@ then choose **Dev Studio** on the title screen). It has three tabs:
 2. **Inbox.** Pictures wait here. **Import into the game** uses your AI assist model twice: one pass
    writes the villagers' lines, the checks and the spots to notice; a second, separate pass checks that
    draft against the picture and your notes. The facts you entered always win. The picture then appears
-   in its level as a **draft**. **Delete** moves a picture to `content-inbox/deleted/`.
-3. **Pictures in the game.** Every level and its pictures. **Mark reviewed** once you've played and
-   checked a draft; **Remove from game** takes a picture out (a copy is kept in
+   in its level, **not visible in game** yet (a holding phase). **Delete** moves a picture to
+   `content-inbox/deleted/`.
+3. **Pictures in the game.** Every level and its pictures, each switched **Visible in game** or **Not
+   visible in game** (hidden pictures aren't in the game anywhere, local or published). **Edit** opens
+   a form for everything about a picture: what each villager says, the checks, the spots to notice
+   (click the picture to move one), the caption, credential, verdict and lesson. **Play it** plays just
+   that picture, even while it's hidden. **Remove** takes a picture out (a copy is kept in
    `content-inbox/removed/`, and replaced pictures in `content-inbox/replaced/`, so nothing is lost).
 
 Reload the game to play your changes.

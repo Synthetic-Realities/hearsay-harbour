@@ -44,7 +44,8 @@ image generation)" or "Phone camera, by Dr Sam Martin").
   finding ("Nothing comes back…", "No seal…") with strength `none` or `some`.
 - Don't identify real private people in pictures. If a picture shows an identifiable private person
   or a child, stop and check with the user before importing it.
-- Everything imported gets `"status": "draft"`. Only the user marks entries `reviewed`.
+- Everything imported gets `"visible": false` (a holding phase: not in the game). Only the user makes
+  a picture visible, from the Studio's **Pictures in the game** tab.
 
 ## Steps
 
@@ -91,7 +92,7 @@ image generation)" or "Phone camera, by Dr Sam Martin").
 6. **Write the files.**
    - Resize and copy the image: `sips -Z 1400 <inbox file> --out public/pictures/<id>.<ext>`
      (skip the resize for images already under 1400px).
-   - Add the entry, with `"status": "draft"`, to `app/packs/level-<N>-*.json` for the sidecar's
+   - Add the entry, with `"visible": false`, to `app/packs/level-<N>-*.json` for the sidecar's
      level. If that pack doesn't exist, create it with `id`, `level`, `title`, `blurb` (ask the user
      for a title, or propose one) and `pictures`.
    - Move the image and sidecar to `content-inbox/imported/`.
@@ -99,5 +100,4 @@ image generation)" or "Phone camera, by Dr Sam Martin").
 7. **Validate.** Run `npm run validate` and fix anything it reports. Then run `npx nuxt typecheck`.
 
 8. **Report.** For each picture: the level, the truth, the cues, any reviewer fixes, and anything
-   you need the user to confirm. Remind them to play the level and change `status` to `reviewed`
-   once they're happy.
+   you need the user to confirm. Remind them to try it with **Play it** in the Studio, edit anything, then switch it to **Visible in game**.
