@@ -1,6 +1,6 @@
 {
   "name": "hearsay-harbour",
-  "version": "1.2.0",
+  "version": "1.3.0",
   "description": "A cozy island game for spotting AI-generated misinformation images (SDA Vision, Synthetic Realities).",
   "author": "Dr Sam Martin (https://orcid.org/0000-0002-4466-8374)",
   "license": "MIT",
