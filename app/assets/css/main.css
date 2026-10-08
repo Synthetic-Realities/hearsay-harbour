@@ -1,0 +1,244 @@
+/* Design tokens follow Hivebound's cozy palette (MIT, see THIRD_PARTY.md). */
+:root {
+  --font-ui: 'Fredoka', ui-rounded, 'SF Pro Rounded', system-ui, sans-serif;
+  --font-hand: 'Patrick Hand', 'Fredoka', ui-rounded, cursive;
+
+  --ink: #5b3a24;
+  --ink-soft: #8a6a52;
+  --paper: #fffaf0;
+  --paper-2: #fff3dc;
+  --line: #f0dcc0;
+  --honey: #ffb627;
+  --honey-deep: #e89400;
+  --leaf: #7fbf7a;
+  --leaf-deep: #4f9a55;
+  --sea: #8fd3e8;
+  --sea-deep: #3f8fb0;
+  --berry: #d1495b;
+  --lilac: #c6b3e6;
+  --sky-top: #ffe7c2;
+  --sky-bottom: #cfe8ff;
+  --shadow: 0 10px 30px -12px rgba(120, 80, 40, 0.35), 0 2px 6px rgba(120, 80, 40, 0.12);
+  --radius: 22px;
+  --focus: 0 0 0 3px var(--paper), 0 0 0 6px var(--honey-deep);
+  --panel-bg: rgba(255, 250, 240, 0.94);
+  --panel-border: 2px solid rgba(240, 220, 192, 0.9);
+  --ease: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --dur: 220ms;
+
+  --camera: #3f8fb0;
+  --ai: #d1495b;
+  --unsure: #c98a00;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  height: 100%;
+  overflow: hidden;
+  overscroll-behavior: none;
+  font-family: var(--font-ui);
+  font-size: 16px;
+  color: var(--ink);
+  background: linear-gradient(180deg, var(--sky-top) 0%, var(--sky-bottom) 100%);
+  -webkit-font-smoothing: antialiased;
+  -webkit-tap-highlight-color: transparent;
+}
+
+button {
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+}
+
+:focus {
+  outline: none;
+}
+
+:focus-visible {
+  box-shadow: var(--focus) !important;
+  border-radius: 14px;
+}
+
+.sr-only {
+  position: absolute !important;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.panel {
+  background: var(--panel-bg);
+  border: var(--panel-border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.chip-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45em;
+  min-width: 48px;
+  min-height: 48px;
+  padding: 0 0.95em;
+  border: var(--panel-border);
+  border-radius: 999px;
+  background: var(--panel-bg);
+  box-shadow: var(--shadow);
+  font-weight: 600;
+  transition: transform var(--dur) var(--ease), background var(--dur);
+}
+
+.chip-btn:hover {
+  transform: translateY(-2px);
+  background: #fff;
+}
+
+.chip-btn:active {
+  transform: translateY(1px) scale(0.97);
+}
+
+.chip-btn svg {
+  width: 1.35em;
+  height: 1.35em;
+  flex: none;
+}
+
+/* The big friendly honey button. */
+.big-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5em;
+  min-height: 52px;
+  padding: 0 1.4em;
+  border: none;
+  border-radius: 999px;
+  background: var(--honey);
+  color: #4a2c14;
+  font-weight: 700;
+  font-size: 1.05rem;
+  box-shadow: 0 4px 0 var(--honey-deep), var(--shadow);
+  transition: transform var(--dur) var(--ease), filter var(--dur);
+}
+
+.big-btn:hover {
+  transform: translateY(-2px);
+  filter: brightness(1.04);
+}
+
+.big-btn:active {
+  transform: translateY(2px);
+  box-shadow: 0 2px 0 var(--honey-deep), var(--shadow);
+}
+
+.big-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.big-btn.quiet {
+  background: var(--paper-2);
+  box-shadow: 0 4px 0 var(--line), var(--shadow);
+  color: var(--ink);
+}
+
+.kbd {
+  display: inline-block;
+  min-width: 1.7em;
+  padding: 0.05em 0.4em;
+  border-radius: 7px;
+  background: var(--paper-2);
+  border: 1.5px solid var(--line);
+  border-bottom-width: 3px;
+  font-size: 0.85em;
+  font-weight: 600;
+  text-align: center;
+}
+
+.hand {
+  font-family: var(--font-hand);
+  font-size: 1.15em;
+}
+
+/* Lean / label tags. */
+.tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35em;
+  padding: 0.1em 0.65em;
+  border-radius: 999px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  background: var(--paper-2);
+  border: 1.5px solid var(--line);
+}
+
+.tag.camera {
+  color: var(--camera);
+  border-color: #b9dcea;
+  background: #eef8fc;
+}
+
+.tag.ai {
+  color: var(--ai);
+  border-color: #f2c2c8;
+  background: #fdf0f1;
+}
+
+.tag.unsure {
+  color: var(--unsure);
+  border-color: #f4dc9e;
+  background: #fff8e3;
+}
+
+.picture-frame {
+  position: relative;
+  display: block;
+  margin: 0 auto;
+  padding: 8px;
+  background: #fff;
+  border-radius: 14px;
+  box-shadow: 0 6px 18px -8px rgba(120, 80, 40, 0.45);
+  line-height: 0;
+}
+
+.picture-frame img {
+  display: block;
+  max-width: 100%;
+  border-radius: 8px;
+}
+
+.claim {
+  font-family: var(--font-hand);
+  font-size: 1.2rem;
+  padding: 0.5em 0.8em;
+  background: var(--paper-2);
+  border-radius: 12px;
+  border: 1.5px dashed var(--line);
+}

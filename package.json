@@ -1,0 +1,33 @@
+{
+  "name": "hearsay-harbour",
+  "version": "1.0.0",
+  "description": "A cozy island game for spotting AI-generated misinformation images (SDA Vision, Synthetic Realities).",
+  "author": "Dr Sam Martin (https://orcid.org/0000-0002-4466-8374)",
+  "license": "MIT",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "nuxt dev",
+    "build": "nuxt build",
+    "generate": "NUXT_APP_BASE_URL=./ nuxt generate",
+    "preview": "nuxt preview",
+    "postinstall": "nuxt prepare",
+    "typecheck": "nuxt typecheck",
+    "validate": "node scripts/validate-packs.mjs"
+  },
+  "dependencies": {
+    "@pinia/nuxt": "^1.0.2",
+    "@tresjs/cientos": "^5.9.0",
+    "@tresjs/core": "^5.9.0",
+    "@tresjs/nuxt": "^5.7.0",
+    "nuxt": "^4.5.2",
+    "pinia": "^4.0.3",
+    "three": "^0.186.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.20.5",
+    "@types/three": "^0.186.0",
+    "typescript": "~5.9",
+    "vue-tsc": "^3.3.11"
+  }
+}

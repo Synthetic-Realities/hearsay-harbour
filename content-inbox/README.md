@@ -1,0 +1,23 @@
+# Picture inbox
+
+Drop new pictures here to turn them into new levels.
+
+1. **Add pictures.** Either copy images into this folder, or start the game with `npm run dev` and use
+   **Dev Studio: add pictures** on the title screen (it saves the picture and your notes here).
+2. **Say how each one was made.** Next to `flood.jpg`, add `flood.json` (the Studio does this for you):
+
+   ```json
+   { "truth": "ai", "level": 2, "claim": "Town centre underwater this morning!",
+     "source": "Generated for the workshop with an image tool, 2026", "notes": "Point out the railings" }
+   ```
+
+   `truth` is `camera`, `edited`, `assisted`, `ai` or `unknown`. The import never guesses this.
+   `source` is the only place the checks get their facts from, so be as specific as you can.
+3. **Import.** In Claude Code, in this project, run `/import-pictures`. One agent drafts the villagers'
+   lines, the check findings and the spots; a second agent reviews the draft against the picture.
+   Entries arrive in `app/packs/level-<N>-*.json` marked `"status": "draft"`, and the files move to
+   `imported/`.
+4. **Review.** Play the level, edit anything in the pack file, and change `"status"` to `"reviewed"`.
+   `npm run validate` checks every pack.
+
+Pictures in this folder are not published with the game and are ignored by git.

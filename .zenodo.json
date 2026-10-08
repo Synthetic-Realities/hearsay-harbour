@@ -1,0 +1,19 @@
+{
+  "title": "Hearsay Harbour: a cozy game for spotting AI-generated misinformation images",
+  "upload_type": "software",
+  "description": "<p>An academic research project of Synthetic Realities, led by Dr Sam Martin, Smart Data Research UK (UKRI) Fellow (Grant number UKRI4010), Manchester Metropolitan University (MMU).</p><p>A cozy island game that teaches the SDA Vision community workshop method (Notice, Discuss, Check, Reflect) for working out how a picture was made before sharing it. Built on the visual style of Hivebound by zernonia (MIT).</p>",
+  "creators": [
+    {
+      "name": "Martin, Sam",
+      "affiliation": "Manchester Metropolitan University",
+      "orcid": "0000-0002-4466-8374"
+    }
+  ],
+  "license": "MIT",
+  "keywords": ["synthetic media", "AI-generated images", "misinformation", "media literacy", "serious games", "content credentials"],
+  "notes": "Funded by Smart Data Research UK (UKRI), grant UKRI4010.",
+  "related_identifiers": [
+    { "identifier": "https://github.com/zernonia/hivebound", "relation": "isDerivedFrom", "resource_type": "software" },
+    { "identifier": "https://github.com/Synthetic-Realities/sda-vision-source", "relation": "isSupplementTo", "resource_type": "software" }
+  ]
+}
