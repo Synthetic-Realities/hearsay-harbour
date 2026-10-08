@@ -44,6 +44,20 @@ export const GARDEN: Hex[] = [
   { q: -1, r: 1 }, { q: -2, r: 2 }, { q: -1, r: 2 }, { q: -2, r: 3 },
 ]
 
+/**
+ * Where the garden spreads once the garden beds are full: nearby grass, nearest first.
+ * More levels mean more trust, so more of the island blooms.
+ */
+export const GARDEN_SPREAD: Hex[] = [
+  { q: 0, r: 2 }, { q: -1, r: 3 }, { q: -3, r: 2 }, { q: 1, r: 1 }, { q: 1, r: 2 }, { q: -2, r: 1 },
+]
+
+/** The board's own tile is painted lilac so it stands out (the same colour as Wren's roof). */
+export const BOARD_TILE_COLOR = '#c6b3e6'
+
+/** Kept clear and not walkable, so a click aimed at the board's diamond never lands behind it. */
+export const BEHIND_BOARD: Hex = { q: 0, r: -2 }
+
 /** Scenery that takes up a tile. */
 export const LIGHTHOUSE: Hex = { q: 4, r: -3 }
 
@@ -61,7 +75,7 @@ export interface World {
 
 export function buildWorld(): World {
   const tiles: Tile[] = []
-  const occupied = new Set([...PLACES.map(p => hexKey(p.at)), hexKey(LIGHTHOUSE)])
+  const occupied = new Set([...PLACES.map(p => hexKey(p.at)), hexKey(LIGHTHOUSE), hexKey(BEHIND_BOARD)])
   const garden = new Set(GARDEN.map(hexKey))
   const pier = new Set(PIER.map(hexKey))
   const doors = new Set(PLACES.map(p => hexKey(p.door)))

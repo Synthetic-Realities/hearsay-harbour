@@ -8,7 +8,7 @@ const open = ref(window.innerWidth > 900)
 const card = computed(() => {
   const r = game.record
   if (game.finished) {
-    return { step: 'Wrap up', prompt: 'Which picture changed the room\'s mind the most, and what changed it?', tip: 'Open the recap to compare the room\'s first and final votes. You can download the findings for your notes.' }
+    return { step: 'Wrap up', prompt: 'Which picture changed the room\'s mind the most, and what changed it?', tip: 'The recap compares the room\'s first and final votes. You can save it as an image or PDF for your notes.' }
   }
   if (game.step === 'arriving' || game.step === 'notice') {
     return { step: 'Activity 1 · Notice', prompt: 'What shapes your first impression of how this was made?', tip: 'Before anyone looks anything up, take a show of hands (camera, AI or can\'t tell) and enter it in the Notice window.' }
@@ -39,6 +39,9 @@ const card = computed(() => {
       <p class="tip">
         {{ card.tip }}
       </p>
+      <button v-if="game.finished" class="recap" @click="game.open({ kind: 'recap' })">
+        Open the recap
+      </button>
     </div>
   </aside>
 </template>
@@ -86,6 +89,16 @@ const card = computed(() => {
   margin: 0 0 8px;
   font-size: 1.2rem;
   line-height: 1.3;
+}
+.recap {
+  margin-top: 10px;
+  width: 100%;
+  min-height: 40px;
+  border: none;
+  border-radius: 999px;
+  background: var(--lilac);
+  color: #2f1f4a;
+  font-weight: 700;
 }
 .tip {
   margin: 0;

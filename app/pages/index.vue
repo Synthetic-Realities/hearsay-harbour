@@ -46,6 +46,7 @@ const sky = computed(() => {
     <MapDialog v-else-if="dialog?.kind === 'map'" />
     <CreditsDialog v-else-if="dialog?.kind === 'credits'" />
     <RewardDialog v-else-if="dialog?.kind === 'reward'" />
+    <PhoneDialog v-else-if="dialog?.kind === 'phone'" />
     <StudioDialog v-else-if="dev && dialog?.kind === 'studio'" />
 
     <div class="sr-only" aria-live="polite">

@@ -1,28 +1,29 @@
 <script setup lang="ts">
-import type { Lean } from '~/utils/content'
+import { LABELS, LABEL_ORDER, LEAN_CHOICES } from '~/utils/content'
 import { useGame } from '~/stores/game'
 
-/* Workshop mode: the facilitator tallies the room's show of hands. */
+/*
+ * Workshop mode: the facilitator tallies the room's show of hands. The first vote uses the
+ * first-impression choices; the final vote uses the same "How was it made?" labels as the board.
+ */
 const props = defineProps<{ which: 'roomFirst' | 'roomFinal', title: string }>()
 const game = useGame()
 const votes = computed(() => game.record[props.which])
-const OPTIONS: { id: Lean, text: string }[] = [
-  { id: 'camera', text: 'Camera' },
-  { id: 'ai', text: 'AI' },
-  { id: 'unsure', text: 'Can\'t tell' },
-]
+const options = computed(() => props.which === 'roomFirst'
+  ? LEAN_CHOICES.map(c => ({ id: c.id as string, text: c.short }))
+  : LABEL_ORDER.map(l => ({ id: l as string, text: LABELS[l].name })))
 </script>
 
 <template>
   <fieldset class="room">
     <legend><UiIcon name="people" /> {{ title }}</legend>
     <div class="row">
-      <div v-for="o in OPTIONS" :key="o.id" class="counter" :class="o.id">
+      <div v-for="o in options" :key="o.id" class="counter" :class="o.id">
         <span class="name">{{ o.text }}</span>
         <button :aria-label="`One fewer for ${o.text}`" @click="game.vote(which, o.id, -1)">
           −
         </button>
-        <output :aria-label="`${o.text} votes`">{{ votes[o.id] }}</output>
+        <output :aria-label="`${o.text} votes`">{{ votes[o.id] ?? 0 }}</output>
         <button :aria-label="`One more for ${o.text}`" @click="game.vote(which, o.id, 1)">
           +
         </button>
@@ -71,10 +72,15 @@ legend svg {
   font-size: 0.85rem;
   margin-right: 2px;
 }
-.camera .name {
+.camera .name,
+.edited .name {
   color: var(--camera);
 }
-.ai .name {
+.drawn .name {
+  color: #7a5a92;
+}
+.ai .name,
+.assisted .name {
   color: var(--ai);
 }
 .unsure .name {

@@ -11,9 +11,12 @@ Drop new pictures here to turn them into new levels.
      "source": "Generated for the workshop with an image tool, 2026", "notes": "Point out the railings" }
    ```
 
-   `truth` is `camera`, `edited`, `assisted`, `ai` or `unknown`. The import never guesses this.
+   `truth` is `camera`, `edited`, `drawn` (hand-drawn or illustrated), `assisted`, `ai` or `unknown`.
+   The import never guesses this. Add `"madeWith"` too (e.g. `"ChatGPT (OpenAI image generation)"`): players
+   see it as the picture's credential at the reveal.
    `source` is the only place the checks get their facts from, so be as specific as you can.
-3. **Import.** In Claude Code, in this project, run `/import-pictures`. One agent drafts the villagers'
+3. **Import.** In an AI coding agent that can run skills, open this project and run `/import-pictures`
+   (the skill is in `.claude/skills/import-pictures/SKILL.md`). One agent drafts the villagers'
    lines, the check findings and the spots; a second agent reviews the draft against the picture.
    Entries arrive in `app/packs/level-<N>-*.json` marked `"status": "draft"`, and the files move to
    `imported/`.

@@ -19,7 +19,7 @@ function finish() {
 const STRENGTH = {
   strong: { text: 'Strong evidence', dots: 3 },
   some: { text: 'Some evidence', dots: 2 },
-  none: { text: 'Doesn\'t settle it', dots: 0 },
+  none: { text: 'Doesn\'t settle it: you decide', dots: 0 },
 }
 </script>
 

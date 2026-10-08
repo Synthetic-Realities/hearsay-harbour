@@ -17,6 +17,7 @@ const kind = (id: string) => (isVillager(id) ? 'person' : id === 'board' ? 'boar
       :key="p.id"
       class="tag-pill"
       :class="[kind(p.id), { done: game.step === 'investigate' && visited.includes(p.id) }]"
+      @click="game.goto = p.id"
     >
       {{ p.label }}
       <span v-if="game.step === 'investigate' && visited.includes(p.id)" class="tick">✓</span>
@@ -34,6 +35,9 @@ const kind = (id: string) => (isVillager(id) ? 'person' : id === 'board' ? 'boar
 .tags.hidden {
   opacity: 0;
 }
+.tags.hidden .tag-pill {
+  pointer-events: none;
+}
 .tag-pill {
   position: absolute;
   left: 0;
@@ -46,6 +50,8 @@ const kind = (id: string) => (isVillager(id) ? 'person' : id === 'board' ? 'boar
   font-size: 0.82rem;
   font-weight: 600;
   white-space: nowrap;
+  pointer-events: auto;
+  cursor: pointer;
   will-change: transform;
   transition: opacity 200ms;
 }

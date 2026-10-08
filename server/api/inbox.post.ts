@@ -1,7 +1,7 @@
 import { mkdir, writeFile } from 'node:fs/promises'
 import { extname, join } from 'node:path'
 
-const LABELS = ['camera', 'edited', 'assisted', 'ai', 'unknown']
+const LABELS = ['camera', 'edited', 'drawn', 'assisted', 'ai', 'unknown']
 
 /* Dev Studio only: save an uploaded picture and its notes into content-inbox/. */
 export default defineEventHandler(async (event) => {
@@ -28,6 +28,7 @@ export default defineEventHandler(async (event) => {
     level: Number(field('level')) || 2,
     claim: field('claim'),
     source: field('source'),
+    madeWith: field('madeWith'),
     notes: field('notes'),
     addedAt: new Date().toISOString(),
   }

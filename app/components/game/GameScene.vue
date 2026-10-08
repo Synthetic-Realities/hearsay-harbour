@@ -365,6 +365,25 @@ function hexUnder(ev: PointerEvent): Hex | null {
   return world.byKey.has(hexKey(h)) ? h : null
 }
 
+/** A building, villager or diamond under the pointer, if any (these sit in front of tiles). */
+function placeUnder(ev: PointerEvent): PlaceId | null {
+  const cam = camRef.value
+  if (!cam) return null
+  const rect = renderer.domElement.getBoundingClientRect()
+  ndc.set(((ev.clientX - rect.left) / rect.width) * 2 - 1, -((ev.clientY - rect.top) / rect.height) * 2 + 1)
+  raycaster.setFromCamera(ndc, cam)
+  for (const hit of raycaster.intersectObjects(island.pickTargets, true)) {
+    let o: THREE.Object3D | null = hit.object
+    let visible = true
+    while (o) {
+      if (!o.visible) visible = false
+      if (o.userData.place) return visible ? o.userData.place as PlaceId : null
+      o = o.parent
+    }
+  }
+  return null
+}
+
 /** A tile you can click: somewhere walkable, or a place (walks to its door and uses it). */
 function clickTarget(h: Hex): { tile: Hex, use: PlaceId | null } | null {
   const place = PLACES.find(p => hexEquals(p.at, h))
@@ -439,6 +458,8 @@ function onPointerUp(ev: PointerEvent) {
   if (ev.type === 'pointercancel' || dragged) return
   if (game.dialog || !game.started) return
   if (Math.hypot(ev.clientX - downAt.x, ev.clientY - downAt.y) > 8) return
+  const picked = placeUnder(ev)
+  if (picked) return walkTo(PLACE_BY_ID[picked].door, picked)
   const h = hexUnder(ev)
   const t = h && clickTarget(h)
   if (!t) return
@@ -447,6 +468,12 @@ function onPointerUp(ev: PointerEvent) {
 function onPointerMove(ev: PointerEvent) {
   onDrag(ev)
   if (ev.pointerType !== 'mouse' || pointers.size) return
+  const picked = placeUnder(ev)
+  if (picked) {
+    setRing(hoverRing, game.dialog ? null : PLACE_BY_ID[picked].at)
+    renderer.domElement.style.cursor = 'pointer'
+    return
+  }
   const h = hexUnder(ev)
   const t = h && clickTarget(h)
   setRing(hoverRing, t && !game.dialog ? (PLACES.some(p => hexEquals(p.at, h!)) ? h : t.tile) : null)

@@ -205,6 +205,12 @@ button {
   background: #eef8fc;
 }
 
+.tag.drawn {
+  color: #6b4d80;
+  border-color: #dccbe8;
+  background: #f7f2fd;
+}
+
 .tag.ai {
   color: var(--ai);
   border-color: #f2c2c8;

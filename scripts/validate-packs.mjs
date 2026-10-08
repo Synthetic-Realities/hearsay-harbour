@@ -7,8 +7,8 @@ import { fileURLToPath } from 'node:url'
 const root = fileURLToPath(new URL('..', import.meta.url))
 const packsDir = join(root, 'app/packs')
 const picsDir = join(root, 'public/pictures')
-const LABELS = ['camera', 'edited', 'assisted', 'ai', 'unsure']
-const LEANS = ['camera', 'ai', 'unsure']
+const LABELS = ['camera', 'edited', 'drawn', 'assisted', 'ai', 'unsure']
+const LEANS = ['camera', 'drawn', 'ai', 'unsure']
 const VILLAGERS = ['wren', 'pip', 'moss', 'jim']
 const CHECKS = ['tide', 'seal', 'crate']
 const STRENGTHS = ['strong', 'some', 'none']
@@ -31,6 +31,7 @@ for (const f of readdirSync(packsDir).filter(f => f.endsWith('.json'))) {
     need(text(p.id) && !seen.has(p.id), at, 'needs a unique id')
     seen.add(p.id)
     need(text(p.src) && existsSync(join(picsDir, p.src)), at, `image public/pictures/${p.src} is missing`)
+    if (p.madeWith !== undefined) need(text(p.madeWith), at, 'madeWith is empty')
     if (p.title !== undefined) need(text(p.title), at, 'title is empty')
     for (const k of ['arrival', 'claim', 'verdict', 'lesson']) need(text(p[k]), at, `${k} is empty`)
     need(LABELS.includes(p.truth), at, `truth must be one of ${LABELS.join(', ')}`)

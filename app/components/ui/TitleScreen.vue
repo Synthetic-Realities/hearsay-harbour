@@ -59,6 +59,9 @@ function resume() {
         Workshop mode adds facilitator prompts and show-of-hands voting for a room.
       </p>
       <div class="links">
+        <button class="link" @click="game.open({ kind: 'phone' })">
+          Play on your phone
+        </button>
         <button class="link" @click="game.open({ kind: 'credits' })">
           Credits
         </button>

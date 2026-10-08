@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { hexToWorld } from '~/utils/hex'
-import { LIGHTHOUSE, PIER, PLACES, type PlaceId, TERRAIN_COLORS, buildWorld } from '~/utils/world'
+import { BOARD_TILE_COLOR, LIGHTHOUSE, PIER, PLACE_BY_ID, PLACES, type PlaceId, TERRAIN_COLORS, buildWorld } from '~/utils/world'
 
 /*
  * A flat, labelled map of the island drawn from the same layout as the 3D scene,
@@ -22,7 +22,7 @@ const land = world.tiles
   .filter(t => t.terrain !== 'water')
   .map((t) => {
     const { x, z } = hexToWorld(t.hex)
-    return { key: t.key, x: x * S, y: z * S, fill: t.terrain === 'pier' ? '#c49a6c' : TERRAIN_COLORS[t.terrain] }
+    return { key: t.key, x: x * S, y: z * S, fill: t.terrain === 'pier' ? '#c49a6c' : t.key === `${PLACE_BY_ID.board.at.q},${PLACE_BY_ID.board.at.r}` ? BOARD_TILE_COLOR : TERRAIN_COLORS[t.terrain] }
   })
 
 const KIND: Record<PlaceId, { color: string, kind: 'person' | 'tool' | 'home' }> = {

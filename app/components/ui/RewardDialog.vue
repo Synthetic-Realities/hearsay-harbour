@@ -27,7 +27,12 @@ const RANKS = [
   { title: 'Harbour Detective', medal: '#cfd6e2', ribbon: '#6fb7ea', line: 'Careful, curious and hard to fool. The village trusts your board.' },
   { title: 'Master Keeper of Hearsay Harbour', medal: '#ffcf4d', ribbon: '#d1495b', line: 'Notice, Discuss, Check, Reflect: you did all four, every time. The whole village is celebrating.' },
 ]
-const rank = computed(() => RANKS[count.value]!)
+// In workshop mode the whole room earns the rank together.
+const PLURAL = ['Keepers in Training', 'Apprentice Keepers', 'Harbour Detectives', 'Master Keepers of Hearsay Harbour']
+const rank = computed(() => {
+  const r = RANKS[count.value]!
+  return game.workshop ? { ...r, title: PLURAL[count.value]! } : r
+})
 
 const name = ref('')
 const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches
@@ -76,12 +81,12 @@ onMounted(() => {
             <path d="M0-9l2.6 5.6 6.1.7-4.5 4.1 1.2 6L0 4.4-5.4 7.4l1.2-6-4.5-4.1 6.1-.7z" :fill="s.earned ? '#ffb627' : '#e8e2d6'" stroke="#fff" stroke-width="1.5" />
           </g>
         </svg>
-        <label class="name" for="reward-name">Keeper's name</label>
-        <input id="reward-name" v-model="name" type="text" maxlength="40" placeholder="Type your name">
+        <label class="name" for="reward-name">{{ game.workshop ? 'Group or class name' : 'Keeper\'s name' }}</label>
+        <input id="reward-name" v-model="name" type="text" maxlength="40" :placeholder="game.workshop ? 'Type your group\'s name' : 'Type your name'">
       </div>
       <div class="words">
         <p class="cert hand">
-          This is to certify that <strong>{{ name || 'our new keeper' }}</strong> looked carefully at
+          This is to certify that <strong>{{ name || (game.workshop ? 'our keepers' : 'our new keeper') }}</strong> looked carefully at
           {{ pics.length }} pictures in Hearsay Harbour and earned the rank of <strong>{{ rank.title }}</strong>.
         </p>
         <p class="line">

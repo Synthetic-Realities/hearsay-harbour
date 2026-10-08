@@ -1,7 +1,7 @@
 {
   "title": "Hearsay Harbour: a cozy game for spotting AI-generated misinformation images",
   "upload_type": "software",
-  "description": "<p>An academic research project of Synthetic Realities, led by Dr Sam Martin, Smart Data Research UK (UKRI) Fellow (Grant number UKRI4010), Manchester Metropolitan University (MMU).</p><p>A cozy island game that teaches the SDA Vision community workshop method (Notice, Discuss, Check, Reflect) for working out how a picture was made before sharing it. Built on the visual style of Hivebound by zernonia (MIT).</p>",
+  "description": "<p>An academic research project of Synthetic Realities, led by Dr Sam Martin, Smart Data Research UK (UKRI) Fellow (Grant number UKRI4010), Manchester Metropolitan University (MMU).</p><p>Hearsay Harbour is a cozy island game about working out how a picture was made before you share it. It teaches the SDA Vision community workshop method (Notice, Discuss, Check, Reflect) and can be played alone, in a classroom, or run on a projector as a facilitated workshop.</p><p>Players notice a first impression, discuss each picture with four villagers who look for different things (including Grumpy Professor Jim, who thinks everything is AI), check it with three minigames standing in for reverse image search, content credentials (C2PA) and file metadata, and reflect by choosing how it was made and how they would describe it when sharing. Each reveal shows the picture's credential and the spots worth noticing. A trust garden, a Share gull, an end-of-day reward with ranks and stars, a findings recap that can be saved as an image or PDF, and a workshop mode with facilitator prompts and room votes support learning and discussion.</p><p>The game runs in any browser, works on phones and tablets, can be installed to a home screen and played offline, and includes tools for adding picture packs for new levels. Its look is adapted from Hivebound by zernonia (MIT).</p><p>Play online: <a href=\"https://intothedigital.github.io/hearsay-harbour/\">https://intothedigital.github.io/hearsay-harbour/</a></p>",
   "creators": [
     {
       "name": "Martin, Sam",
@@ -10,10 +10,25 @@
     }
   ],
   "license": "MIT",
-  "keywords": ["synthetic media", "AI-generated images", "misinformation", "media literacy", "serious games", "content credentials"],
+  "keywords": [
+    "synthetic media",
+    "AI-generated images",
+    "misinformation",
+    "media literacy",
+    "serious games",
+    "content credentials"
+  ],
   "notes": "Funded by Smart Data Research UK (UKRI), grant UKRI4010.",
   "related_identifiers": [
-    { "identifier": "https://github.com/zernonia/hivebound", "relation": "isDerivedFrom", "resource_type": "software" },
-    { "identifier": "https://github.com/Synthetic-Realities/sda-vision-source", "relation": "isSupplementTo", "resource_type": "software" }
+    {
+      "identifier": "https://github.com/zernonia/hivebound",
+      "relation": "isDerivedFrom",
+      "resource_type": "software"
+    },
+    {
+      "identifier": "https://github.com/Synthetic-Realities/sda-vision-source",
+      "relation": "isSupplementTo",
+      "resource_type": "software"
+    }
   ]
 }

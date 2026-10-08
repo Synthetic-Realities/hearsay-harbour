@@ -11,6 +11,7 @@
       "arrival": "A gull drops a crumpled postcard on the noticeboard.",
       "claim": "NASA's famous \"photo\" of Earth is CGI. Wake up!",
       "truth": "camera",
+      "madeWith": "Hasselblad film camera, by the Apollo 17 crew (NASA), 1972",
       "close": [
         "edited"
       ],
@@ -78,6 +79,7 @@
       "arrival": "A message in a bottle bobs up against the harbour wall.",
       "claim": "My cat Biscuit at his first photoshoot!! 😻",
       "truth": "ai",
+      "madeWith": "Adobe Firefly (AI image generator)",
       "close": [
         "assisted"
       ],
@@ -150,6 +152,7 @@
       "arrival": "Pip runs up waving a phone. \"Someone posted this in the village chat!\"",
       "claim": "Neighbour's cat caught peeking in at dusk 👀",
       "truth": "camera",
+      "madeWith": "Phone camera, by Dr Sam Martin",
       "close": [
         "edited"
       ],
@@ -221,6 +224,7 @@
       "arrival": "Moss pins a page from the island classifieds to the board.",
       "claim": "FOR SALE: washing machine, works fine, collection only. £40.",
       "truth": "camera",
+      "madeWith": "Phone camera, by Dr Sam Martin",
       "close": [
         "edited"
       ],
@@ -293,6 +297,7 @@
       "arrival": "A soggy flyer washes up on the beach.",
       "claim": "Look what they're putting in kids' books now!! What are they hiding??",
       "truth": "ai",
+      "madeWith": "ChatGPT (OpenAI image generation), 8 October 2026",
       "close": [
         "assisted"
       ],
@@ -365,6 +370,7 @@
       "arrival": "The ferry brings a stack of newspapers. This picture is on the front page.",
       "claim": "Huge protest outside the hospital yesterday!",
       "truth": "ai",
+      "madeWith": "Google Gemini and ChatGPT (OpenAI image generation)",
       "close": [
         "assisted"
       ],

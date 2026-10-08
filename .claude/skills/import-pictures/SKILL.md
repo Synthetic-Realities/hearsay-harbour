@@ -13,7 +13,9 @@ title screen in `npm run dev`). Each picture `name.ext` may have a sidecar `name
   "source": "Generated for the workshop with an image tool, 2026", "notes": "Point out the railings" }
 ```
 
-`truth` is one of `camera`, `edited`, `assisted`, `ai`, `unknown`.
+`truth` is one of `camera`, `edited`, `drawn` (hand-drawn or illustrated by a person), `assisted`, `ai`,
+`unknown`. `madeWith` is the picture's credential shown to players at the reveal (e.g. "ChatGPT (OpenAI
+image generation)" or "Phone camera, by Dr Sam Martin").
 
 ## Ground rules (read these first)
 
@@ -40,7 +42,8 @@ title screen in `npm run dev`). Each picture `name.ext` may have a sidecar `name
    ground rules above, and the house style entry. Ask it to return one JSON `Picture` object:
    - `id`, `src` (`<id>.<ext>`), `arrival` (a cozy one-liner about how it reaches the harbour),
      `claim` (from the sidecar, or a realistic share caption that matches the picture), `truth`,
-     `close` (neighbouring labels that deserve partial credit), `source` (copied from the sidecar).
+     `close` (neighbouring labels that deserve partial credit), `source` and `madeWith` (copied from the
+     sidecar; every picture needs a `madeWith` credential, so ask the user if it's missing).
    - `takes` for `wren` (light, lenses, focus; a Sikh elder and retired photographer), `pip`
      (text and small details; a sharp-eyed seven-year-old girl) and `moss` (context: who shared it
      and why; a young fisher boy), and `jim` (Grumpy Professor Jim, a grumpy retired professor and

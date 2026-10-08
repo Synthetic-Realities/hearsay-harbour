@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { sfx } from '~/audio/sfx'
-import { LABELS, LEAN_WORDS, pictureUrl } from '~/utils/content'
+import { LABELS, LEAN_WORDS, pictureUrl, leanMatches, voteList } from '~/utils/content'
 import { useGame } from '~/stores/game'
 
 const game = useGame()
@@ -12,14 +12,12 @@ const delta = computed(() => rec.value.trustDelta)
 const last = computed(() => game.index >= game.pictures.length - 1)
 const showCues = ref(true)
 const roomRows = computed(() => [
-  { name: 'First', v: rec.value.roomFirst },
-  { name: 'Final', v: rec.value.roomFinal },
+  { name: 'First', v: voteList(rec.value.roomFirst, true) },
+  { name: 'Final', v: voteList(rec.value.roomFinal, false) },
 ])
 
 const firstMatches = computed(() => {
-  const f = rec.value.firstLean
-  const t = pic.value.truth
-  return (f === 'camera' && (t === 'camera' || t === 'edited')) || (f === 'ai' && (t === 'ai' || t === 'assisted'))
+  return leanMatches(rec.value.firstLean, pic.value.truth)
 })
 
 const headline = computed(() => {
@@ -63,6 +61,10 @@ onMounted(() => {
             </template>
           </div>
         </div>
+        <p v-if="pic.madeWith" class="credential">
+          <span class="seal-dot" aria-hidden="true" />
+          <span><strong>Made with:</strong> {{ pic.madeWith }}</span>
+        </p>
         <label class="toggle">
           <input v-model="showCues" type="checkbox"> Show spots (yours are honey pebbles)
         </label>
@@ -113,8 +115,8 @@ onMounted(() => {
           </p>
           <div v-for="row in roomRows" :key="row.name" class="room-row">
             <span class="rname">{{ row.name }}</span>
-            <span class="bar"><span class="b-cam" :style="{ flex: row.v.camera }" /><span class="b-ai" :style="{ flex: row.v.ai }" /><span class="b-uns" :style="{ flex: row.v.unsure }" /></span>
-            <span class="nums">{{ row.v.camera }} camera · {{ row.v.ai }} AI · {{ row.v.unsure }} unsure</span>
+            <span class="bar"><span v-for="c in row.v" :key="c.id" :style="{ flex: c.n, background: c.color }" /></span>
+            <span class="nums">{{ row.v.filter(c => c.n).map(c => `${c.n} ${c.name}`).join(' · ') || 'no votes' }}</span>
           </div>
         </div>
         <div class="trust" :class="{ down: delta < 0 }">
@@ -172,6 +174,25 @@ onMounted(() => {
   background: radial-gradient(circle at 35% 30%, #fff1c2, var(--honey) 60%, var(--honey-deep));
   border: 2px solid #fff;
   opacity: 0.9;
+}
+.credential {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 10px 0 0;
+  padding: 8px 12px;
+  border-radius: 12px;
+  background: #eef8fc;
+  border: 1.5px solid #b9dcea;
+  font-size: 0.9rem;
+}
+.seal-dot {
+  flex: none;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--berry);
+  box-shadow: 0 0 0 3px #f8c9cf;
 }
 .toggle {
   display: flex;

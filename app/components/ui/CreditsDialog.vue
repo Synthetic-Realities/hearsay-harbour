@@ -36,6 +36,7 @@ const linkify = (s: string) => s.split(/(https?:\/\/\S+?)(?=[),.]?(?:\s|$))/g)
       <ul class="pics">
         <li v-for="p in pictures" :key="p.id">
           <strong>{{ p.title ?? p.claim }}</strong>
+          <span v-if="p.madeWith">Made with: {{ p.madeWith }}</span>
           <span class="soft">
             <template v-for="(bit, i) in linkify(p.source ?? 'Source to be confirmed.')" :key="i">
               <a v-if="bit.startsWith('http')" :href="bit" target="_blank" rel="noopener">{{ bit }}</a>
@@ -50,7 +51,7 @@ const linkify = (s: string) => s.split(/(https?:\/\/\S+?)(?=[),.]?(?:\s|$))/g)
       <h3>Made with</h3>
       <p class="soft">
         Nuxt, Vue, TresJS and three.js. Fredoka and Patrick Hand fonts (SIL Open Font Licence).
-        Every model and sound is made in code. Developed with Claude Code.
+        Every model and sound is made in code.
         Hearsay Harbour's code is released under the MIT Licence.
       </p>
     </section>

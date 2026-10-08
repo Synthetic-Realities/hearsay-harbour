@@ -5,7 +5,7 @@ import { hexToWorld } from '~/utils/hex'
 
 export type Caption = 'careful' | 'over' | 'shrug'
 
-export type Votes = Record<Lean, number>
+export type Votes = Partial<Record<string, number>>
 
 export interface Pebble {
   x: number
@@ -50,6 +50,7 @@ export type Dialog =
   | { kind: 'studio' }
   | { kind: 'credits' }
   | { kind: 'reward' }
+  | { kind: 'phone' }
 
 const blankRecord = (p: Picture): PictureRecord => ({
   id: p.id,
@@ -61,8 +62,8 @@ const blankRecord = (p: Picture): PictureRecord => ({
   caption: null,
   sharedEarly: false,
   trustDelta: 0,
-  roomFirst: { camera: 0, ai: 0, unsure: 0 },
-  roomFinal: { camera: 0, ai: 0, unsure: 0 },
+  roomFirst: {},
+  roomFinal: {},
 })
 
 const SAVE_KEY = 'hearsay-harbour:v1'
@@ -164,6 +165,13 @@ export const useGame = defineStore('game', {
       this.workshop = workshop
       this.started = true
       this.dialog = { kind: 'guide', page: 0 }
+    },
+    /** Back to the opening screen. The day is saved, so "Continue your day" picks it up again. */
+    goHome() {
+      this.save()
+      this.dialog = null
+      this.started = false
+      this.at = null
     },
     /** Pick up a saved day where it left off. */
     resume() {
@@ -269,7 +277,7 @@ export const useGame = defineStore('game', {
     shareNow() {
       const rec = this.record
       rec.sharedEarly = true
-      const label: Label = rec.firstLean === 'camera' ? 'camera' : rec.firstLean === 'ai' ? 'ai' : 'unsure'
+      const label: Label = rec.firstLean ?? 'unsure'
       this.pin(label, 'over')
     },
     next() {
@@ -280,9 +288,9 @@ export const useGame = defineStore('game', {
     zoomBy(f: number) {
       this.zoom = Math.min(1.9, Math.max(0.5, this.zoom * f))
     },
-    vote(which: 'roomFirst' | 'roomFinal', lean: Lean, by: number) {
+    vote(which: 'roomFirst' | 'roomFinal', choice: string, by: number) {
       const v = this.record[which]
-      v[lean] = Math.max(0, v[lean] + by)
+      v[choice] = Math.max(0, (v[choice] ?? 0) + by)
     },
     restart() {
       this.index = 0

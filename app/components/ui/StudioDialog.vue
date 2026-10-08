@@ -4,7 +4,7 @@ import { useGame } from '~/stores/game'
 
 /*
  * Dev Studio (only in `npm run dev`): drop new pictures into content-inbox/ with the facts
- * only you know (how it was made, where it came from). Claude Code's /import-pictures skill
+ * only you know (how it was made, where it came from). The /import-pictures agent skill
  * then drafts the villagers' lines, checks and spots, and a second pass reviews them.
  */
 const game = useGame()
@@ -14,6 +14,7 @@ const truth = ref('')
 const level = ref(Math.max(2, ...PACKS.map(p => p.level)))
 const claim = ref('')
 const source = ref('')
+const madeWith = ref('')
 const notes = ref('')
 const busy = ref(false)
 const message = ref<{ kind: 'ok' | 'error', text: string } | null>(null)
@@ -23,6 +24,7 @@ const dragging = ref(false)
 const TRUTHS = [
   { id: 'camera', text: 'Camera-made' },
   { id: 'edited', text: 'Edited photo' },
+  { id: 'drawn', text: 'Hand-drawn or illustrated' },
   { id: 'assisted', text: 'AI-assisted' },
   { id: 'ai', text: 'AI-generated' },
   { id: 'unknown', text: 'Don\'t know yet' },
@@ -59,6 +61,7 @@ async function save() {
   form.append('level', String(level.value))
   form.append('claim', claim.value)
   form.append('source', source.value)
+  form.append('madeWith', madeWith.value)
   form.append('notes', notes.value)
   try {
     const res = await $fetch<{ file: string }>('/api/inbox', { method: 'POST', body: form })
@@ -67,6 +70,7 @@ async function save() {
     preview.value = ''
     claim.value = ''
     source.value = ''
+    madeWith.value = ''
     notes.value = ''
     await refresh()
   }
@@ -112,6 +116,8 @@ async function save() {
         </div>
         <label for="studio-claim">Caption it was shared with <span class="soft">(optional)</span></label>
         <input id="studio-claim" v-model="claim" type="text" placeholder="e.g. Huge flood in town this morning!">
+        <label for="studio-made">Made with <span class="soft">(shown to players at the reveal)</span></label>
+        <input id="studio-made" v-model="madeWith" type="text" placeholder="e.g. ChatGPT (OpenAI image generation); or: phone camera, Dr Sam Martin">
         <label for="studio-source">Where it really came from <span class="soft">(the import uses only this for the checks)</span></label>
         <textarea id="studio-source" v-model="source" rows="2" placeholder="e.g. Generated with an image tool for the workshop, 2026; or: my own phone photo, Bristol, 2019" />
         <label for="studio-notes">Notes for the import <span class="soft">(optional)</span></label>
@@ -138,7 +144,7 @@ async function save() {
         </p>
         <h3>Then import them</h3>
         <ol class="steps">
-          <li>In Claude Code, in this project, run <code>/import-pictures</code>.</li>
+          <li>In an AI coding agent that can run skills, open this project and run <code>/import-pictures</code>.</li>
           <li>One AI pass drafts each picture's villager lines, checks and spots. A second, separate pass reviews the draft against the picture and your notes.</li>
           <li>New pictures arrive as <strong>drafts</strong> in a level pack. Play them, then mark them reviewed.</li>
         </ol>

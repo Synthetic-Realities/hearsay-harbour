@@ -132,6 +132,9 @@ const satchelOpen = ref(window.innerWidth > 640)
         <UiIcon name="flower" />
         <span><strong>{{ game.trust }}</strong> <span class="label">trust</span></span>
       </div>
+      <button class="chip-btn" aria-label="Home: back to the opening screen" title="Home (your day is saved)" @click="game.goHome()">
+        <UiIcon name="home" />
+      </button>
       <button class="chip-btn" aria-label="Island map" title="Island map" @click="game.open({ kind: 'map' })">
         <UiIcon name="map" />
       </button>
@@ -154,9 +157,14 @@ const satchelOpen = ref(window.innerWidth > 640)
         <button v-else-if="next" class="big-btn action next-btn" @click="game.goto = next.id">
           {{ next.label }} <UiIcon name="arrow" class="arr" />
         </button>
-        <button v-else-if="game.finished && !game.dialog" class="big-btn action" @click="game.open({ kind: 'reward' })">
-          See your reward
-        </button>
+        <div v-else-if="game.finished && !game.dialog" class="end-btns">
+          <button class="big-btn action" @click="game.open({ kind: 'reward' })">
+            See your reward
+          </button>
+          <button class="big-btn action recap-btn" @click="game.open({ kind: 'recap' })">
+            Open the recap
+          </button>
+        </div>
         <p v-else-if="hint" class="panel hint hand">
           {{ hint }}
         </p>
@@ -374,6 +382,20 @@ const satchelOpen = ref(window.innerWidth > 640)
   justify-content: center;
   width: max-content;
   max-width: calc(100vw - 24px);
+}
+.end-btns {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+}
+.end-btns button {
+  pointer-events: auto;
+}
+.recap-btn {
+  background: var(--lilac);
+  box-shadow: 0 4px 0 #9a83c4, var(--shadow);
+  color: #2f1f4a;
 }
 .next-btn {
   background: #fff6dd;

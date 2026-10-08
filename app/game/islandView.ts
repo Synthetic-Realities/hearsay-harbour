@@ -1,7 +1,7 @@
 import * as THREE from 'three'
 import { type Label, VILLAGERS, isVillager } from '~/utils/content'
 import { type Hex, hexKey, hexToWorld } from '~/utils/hex'
-import { GARDEN, LIGHTHOUSE, PIER, PLACES, type PlaceId, TERRAIN_COLORS, type World } from '~/utils/world'
+import { BEHIND_BOARD, BOARD_TILE_COLOR, GARDEN, GARDEN_SPREAD, LIGHTHOUSE, PLACE_BY_ID, PIER, PLACES, type PlaceId, TERRAIN_COLORS, type World } from '~/utils/world'
 import { cushionHexGeometry, roundedHexShape } from './geometry'
 import {
   type Critter,
@@ -13,6 +13,7 @@ import {
   crates,
   flower,
   jimCabin,
+  mat,
   lighthouse,
   noticeboard,
   pebble,
@@ -48,6 +49,7 @@ export function facing(from: Hex, to: Hex) {
 export const LABEL_PIN: Record<Label, string> = {
   camera: '#6fb7ea',
   edited: '#9ad0f5',
+  drawn: '#c6b3e6',
   assisted: '#c6b3e6',
   ai: '#d1495b',
   unsure: '#ffd166',
@@ -69,7 +71,12 @@ export class IslandView {
   private garden = new THREE.Group()
   private gardenSlots: THREE.Vector3[] = []
   private blooms: { obj: THREE.Object3D, grow: number, target: number }[] = []
+  /** Glowing outlines round flowers that have just grown, so you can see what you earned. */
+  private sprouts: { ring: THREE.Mesh, age: number }[] = []
+  private sproutGeo = new THREE.RingGeometry(0.3, 0.38, 40).rotateX(-Math.PI / 2)
   private markers = new Map<PlaceId, THREE.Mesh>()
+  /** Buildings, villagers and diamonds you can click to go to that place. */
+  readonly pickTargets: THREE.Object3D[] = []
   /** Where each place's name tag floats, in world space. */
   readonly tagAnchors = new Map<PlaceId, THREE.Vector3>()
   private time = 0
@@ -88,7 +95,8 @@ export class IslandView {
       tmpM.compose(tmpP.set(x, t.height, z), tmpQ.identity(), tmpS.set(1, 1, 1))
       this.caps.setMatrixAt(i, tmpM)
       const n = hash(t.hex.q, t.hex.r)
-      tmpC.set(TERRAIN_COLORS[t.terrain]).offsetHSL(0, 0, (n - 0.5) * 0.04)
+      const isBoard = t.key === hexKey(PLACE_BY_ID.board.at)
+      tmpC.set(isBoard ? BOARD_TILE_COLOR : TERRAIN_COLORS[t.terrain]).offsetHSL(0, 0, isBoard ? 0 : (n - 0.5) * 0.04)
       this.caps.setColorAt(i, tmpC)
       this.capTiles.push(t.hex)
       const depth = t.height + 0.9
@@ -151,13 +159,15 @@ export class IslandView {
     this.group.add(lh)
 
     this.group.add(this.garden)
-    for (const h of GARDEN) {
+    // Each bed holds four flower clusters: one in the middle, three round the edge.
+    for (const h of [...GARDEN, ...GARDEN_SPREAD]) {
       const { x, z } = hexToWorld(h)
       const y = world.byKey.get(hexKey(h))?.height ?? 0
-      for (let k = 0; k < 6; k++) {
-        const a = (k / 6) * Math.PI * 2 + hash(h.q, h.r) * 2
-        const r = k % 2 ? 0.52 : 0.3
-        this.gardenSlots.push(new THREE.Vector3(x + Math.cos(a) * r, y, z + Math.sin(a) * r))
+      const turn = hash(h.q, h.r) * 6
+      this.gardenSlots.push(new THREE.Vector3(x, y, z))
+      for (let k = 0; k < 3; k++) {
+        const a = (k / 3) * Math.PI * 2 + turn
+        this.gardenSlots.push(new THREE.Vector3(x + Math.cos(a) * 0.52, y, z + Math.sin(a) * 0.52))
       }
     }
 
@@ -180,6 +190,7 @@ export class IslandView {
       ...PLACES.flatMap(p => [hexKey(p.at), hexKey(p.door)]),
       ...GARDEN.map(hexKey),
       hexKey(LIGHTHOUSE),
+      hexKey(BEHIND_BOARD),
     ])
     for (const t of this.world.tiles) {
       if (t.terrain === 'water' || t.terrain === 'pier' || reserved.has(t.key)) continue
@@ -213,7 +224,23 @@ export class IslandView {
   }
 
   private buildPlaces() {
-    const markerGeo = new THREE.OctahedronGeometry(0.2, 0).scale(1, 1.3, 1)
+    const markerGeo = new THREE.OctahedronGeometry(0.27, 0).scale(1, 1.3, 1)
+    // A soft orange glow behind each diamond, so it reads from across the island.
+    const glowTex = (() => {
+      const c = document.createElement('canvas')
+      c.width = c.height = 128
+      const g = c.getContext('2d')!
+      const grad = g.createRadialGradient(64, 64, 4, 64, 64, 64)
+      grad.addColorStop(0, 'rgba(255,214,120,0.75)')
+      grad.addColorStop(0.35, 'rgba(255,170,40,0.4)')
+      grad.addColorStop(1, 'rgba(255,140,0,0)')
+      g.fillStyle = grad
+      g.fillRect(0, 0, 128, 128)
+      const t = new THREE.CanvasTexture(c)
+      t.colorSpace = THREE.SRGBColorSpace
+      return t
+    })()
+    const glowMat = new THREE.SpriteMaterial({ map: glowTex, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, toneMapped: false })
     for (const p of PLACES) {
       const { x, z } = hexToWorld(p.at)
       const y = this.tileY(p.at)
@@ -236,6 +263,8 @@ export class IslandView {
         building.position.set(x, y, z).addScaledVector(forward, isPerson ? -0.22 : 0)
         building.rotation.y = heading
         if (isPerson) building.scale.setScalar(0.78)
+        building.userData.place = p.id
+        this.pickTargets.push(building)
         this.group.add(building)
       }
       if (isVillager(p.id)) {
@@ -244,9 +273,16 @@ export class IslandView {
         c.root.position.set(x, y, z).addScaledVector(forward, 0.55)
         c.root.rotation.y = heading
         this.villagers.set(p.id, c)
+        c.root.userData.place = p.id
+        this.pickTargets.push(c.root)
         this.group.add(c.root)
       }
-      const marker = new THREE.Mesh(markerGeo, new THREE.MeshStandardMaterial({ color: '#ffb627', emissive: new THREE.Color('#ffb627'), emissiveIntensity: 0.5, roughness: 0.4, transparent: true }))
+      const marker = new THREE.Mesh(markerGeo, new THREE.MeshStandardMaterial({ color: '#ffb627', emissive: new THREE.Color('#ff9d00'), emissiveIntensity: 0.9, roughness: 0.35, transparent: true }))
+      const glow = new THREE.Sprite(glowMat)
+      glow.scale.setScalar(1.3)
+      glow.renderOrder = -1
+      glow.name = 'glow'
+      marker.add(glow)
       const top = p.id === 'board' ? 2.2 : p.id === 'pip' ? 2.1 : p.id === 'tide' ? 0.7 : p.id === 'crate' ? 1.2 : 1.45
       const mx = isVillager(p.id) ? 0.55 : 0
       marker.position.set(x, y + top, z).addScaledVector(forward, mx)
@@ -254,6 +290,8 @@ export class IslandView {
       this.tagAnchors.set(p.id, marker.position.clone())
       marker.position.y += 0.55
       marker.userData.baseY = marker.position.y
+      marker.userData.place = p.id
+      this.pickTargets.push(marker)
       this.markers.set(p.id, marker)
       this.group.add(marker)
     }
@@ -263,7 +301,8 @@ export class IslandView {
   setMarkers(ids: PlaceId[], strong: PlaceId | null) {
     for (const [id, m] of this.markers) {
       m.visible = ids.includes(id) || id === strong
-      m.scale.setScalar(id === strong ? 1.35 : 1)
+      m.scale.setScalar(id === strong ? 1.3 : 1)
+      m.userData.strong = id === strong
       ;(m.material as THREE.MeshStandardMaterial).opacity = id === strong ? 1 : 0.85
     }
   }
@@ -301,17 +340,51 @@ export class IslandView {
     })
   }
 
-  /** The trust garden: one bloom per point of trust. */
+  /** A full little cluster: three to five flowers, sometimes round a blossom bush. */
+  private bloomCluster(i: number) {
+    const g = new THREE.Group()
+    const n = 3 + Math.floor(hash(i, 5) * 3)
+    for (let k = 0; k < n; k++) {
+      const a = (k / n) * Math.PI * 2 + hash(i, k) * 1.5
+      const r = k === 0 ? 0 : 0.11 + hash(k, i) * 0.08
+      const f = flower(FLOWER_COLORS[(i + k * 2) % FLOWER_COLORS.length]!, 1.15 + hash(i + k, 3) * 0.6)
+      f.position.set(Math.cos(a) * r, 0, Math.sin(a) * r)
+      f.rotation.y = hash(i, k + 7) * 6
+      g.add(f)
+    }
+    if (i % 4 === 3) {
+      const bush = new THREE.Group()
+      const c = ['#f3b6c8', '#ffd3e0', '#e8c7f0'][i % 3]!
+      for (const [x, y, z, s] of [[0, 0.16, 0, 0.16], [0.1, 0.12, 0.05, 0.11], [-0.09, 0.11, -0.04, 0.1]] as const) {
+        const b = new THREE.Mesh(new THREE.SphereGeometry(s, 12, 8), mat(c))
+        b.position.set(x, y, z)
+        b.castShadow = true
+        bush.add(b)
+      }
+      bush.position.set(0.16, 0, -0.12)
+      g.add(bush)
+    }
+    return g
+  }
+
+  /** The trust garden: one cluster of blooms per point of trust, spreading out as it fills. */
   setTrust(n: number, instant = false) {
     const want = Math.min(n, this.gardenSlots.length)
     while (this.blooms.length < want) {
       const i = this.blooms.length
-      const f = flower(FLOWER_COLORS[i % FLOWER_COLORS.length]!, 1.5)
+      const f = this.bloomCluster(i)
       f.position.copy(this.gardenSlots[i]!)
       f.rotation.y = hash(i, 2) * 6
-      f.scale.setScalar(instant ? 1.5 : 0.001)
+      f.scale.setScalar(instant ? 1 : 0.001)
       this.garden.add(f)
       this.blooms.push({ obj: f, grow: instant ? 1 : 0, target: 1 })
+      if (!instant) {
+        const ring = new THREE.Mesh(this.sproutGeo, new THREE.MeshBasicMaterial({ color: '#ffe27a', transparent: true, opacity: 0, depthWrite: false, toneMapped: false }))
+        ring.position.copy(f.position).add(new THREE.Vector3(0, 0.04, 0))
+        ring.renderOrder = 3
+        this.garden.add(ring)
+        this.sprouts.push({ ring, age: 0 })
+      }
     }
     for (let i = 0; i < this.blooms.length; i++) this.blooms[i]!.target = i < want ? 1 : 0
   }
@@ -352,14 +425,32 @@ export class IslandView {
     }
     for (const m of this.markers.values()) {
       if (!m.visible) continue
+      // The glow breathes, faster and bigger on the place to go next.
+      const glow = m.getObjectByName('glow')
+      if (glow) glow.scale.setScalar((m.userData.strong ? 1.45 : 1.15) + (reducedMotion ? 0 : Math.sin(t * (m.userData.strong ? 4 : 2.5)) * 0.2))
       m.rotation.y = t * 1.5
       m.position.y = m.userData.baseY + (reducedMotion ? 0 : Math.sin(t * 3) * 0.06)
+    }
+    // New-growth outlines pulse for a while, then fade away.
+    for (let i = this.sprouts.length - 1; i >= 0; i--) {
+      const s = this.sprouts[i]!
+      s.age += dt
+      const mat = s.ring.material as THREE.MeshBasicMaterial
+      const fadeIn = Math.min(1, s.age / 0.6)
+      const fadeOut = 1 - Math.max(0, (s.age - 9) / 2)
+      mat.opacity = 0.9 * fadeIn * fadeOut
+      s.ring.scale.setScalar(1 + (reducedMotion ? 0 : Math.sin(s.age * 4) * 0.08))
+      if (s.age > 11) {
+        this.garden.remove(s.ring)
+        mat.dispose()
+        this.sprouts.splice(i, 1)
+      }
     }
     for (let i = this.blooms.length - 1; i >= 0; i--) {
       const b = this.blooms[i]!
       b.grow += (b.target - b.grow) * (1 - Math.exp(-dt * (reducedMotion ? 30 : 5)))
       const pop = b.target > 0 ? 1 + Math.sin(Math.min(1, b.grow) * Math.PI) * 0.25 : 1
-      b.obj.scale.setScalar(Math.max(0.001, b.grow * 1.5 * pop))
+      b.obj.scale.setScalar(Math.max(0.001, b.grow * pop))
       if (b.target === 0 && b.grow < 0.02) {
         this.garden.remove(b.obj)
         this.blooms.splice(i, 1)

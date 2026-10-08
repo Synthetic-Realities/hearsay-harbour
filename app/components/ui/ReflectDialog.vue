@@ -1,6 +1,5 @@
 <script setup lang="ts">
-import { pictureUrl } from '~/utils/content'
-import { CHECKS, type Label, LABELS, LEAN_WORDS, VILLAGERS } from '~/utils/content'
+import { CHECKS, LABELS, LABEL_ORDER, LEAN_WORDS, type Label, VILLAGERS, pictureUrl } from '~/utils/content'
 import { type Caption, useGame } from '~/stores/game'
 
 const game = useGame()
@@ -9,7 +8,7 @@ const rec = computed(() => game.record)
 const label = ref<Label | null>(null)
 const caption = ref<Caption | null>(null)
 
-const ORDER: Label[] = ['camera', 'edited', 'assisted', 'ai', 'unsure']
+const ORDER: Label[] = LABEL_ORDER
 
 const checkedNames = computed(() => {
   const bits = [
@@ -182,6 +181,10 @@ ul {
 .opt.on.edited {
   border-color: var(--camera);
   background: #eef8fc;
+}
+.opt.on.drawn {
+  border-color: #8a6a9e;
+  background: #f7f2fd;
 }
 .opt.on.ai,
 .opt.on.assisted {

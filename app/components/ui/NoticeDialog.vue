@@ -1,7 +1,6 @@
 <script setup lang="ts">
-import { pictureUrl } from '~/utils/content'
 import { sfx } from '~/audio/sfx'
-import type { Lean } from '~/utils/content'
+import { LEAN_CHOICES, type Lean, pictureUrl } from '~/utils/content'
 import { type Pebble, useGame } from '~/stores/game'
 
 const game = useGame()
@@ -21,11 +20,7 @@ function lift(i: number) {
   pebbles.value.splice(i, 1)
 }
 
-const OPTIONS: { id: Lean, text: string }[] = [
-  { id: 'camera', text: 'Looks camera-made' },
-  { id: 'ai', text: 'Looks AI-made' },
-  { id: 'unsure', text: 'Can\'t tell yet' },
-]
+const OPTIONS = LEAN_CHOICES
 </script>
 
 <template>
@@ -170,6 +165,11 @@ h3 {
   background: #eef8fc;
   border-color: var(--camera);
   color: var(--camera);
+}
+.choice.on.drawn {
+  background: #f7f2fd;
+  border-color: #8a6a9e;
+  color: #6b4d80;
 }
 .choice.on.ai {
   background: #fdf0f1;

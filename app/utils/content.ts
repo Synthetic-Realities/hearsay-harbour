@@ -8,8 +8,8 @@
  * running a workshop.
  */
 
-export type Label = 'camera' | 'edited' | 'assisted' | 'ai' | 'unsure'
-export type Lean = 'camera' | 'ai' | 'unsure'
+export type Label = 'camera' | 'edited' | 'drawn' | 'assisted' | 'ai' | 'unsure'
+export type Lean = 'camera' | 'drawn' | 'ai' | 'unsure'
 export type VillagerId = 'wren' | 'pip' | 'moss' | 'jim'
 export const VILLAGER_IDS: VillagerId[] = ['wren', 'pip', 'moss', 'jim']
 export const isVillager = (id: string): id is VillagerId => (VILLAGER_IDS as string[]).includes(id)
@@ -18,13 +18,44 @@ export type CheckId = 'tide' | 'seal' | 'crate'
 export const LABELS: Record<Label, { name: string, blurb: string }> = {
   camera: { name: 'Camera-made', blurb: 'A photo, taken with a camera or phone' },
   edited: { name: 'Edited photo', blurb: 'A real photo, changed afterwards' },
+  drawn: { name: 'Hand-drawn or illustrated', blurb: 'Drawn or painted by a person, on paper or on a computer' },
   assisted: { name: 'AI-assisted', blurb: 'People made it, with AI doing some of the work' },
   ai: { name: 'AI-generated', blurb: 'Made by an AI image tool' },
-  unsure: { name: 'Still unsure', blurb: 'The evidence doesn\'t settle it, and that\'s fine to say' },
+  unsure: { name: 'Still unsure', blurb: 'The evidence doesn\'t settle it. You decide, and "not sure yet" is a fine answer' },
+}
+
+/** The first-impression choices, in order (also the room's first vote). */
+export const LEAN_CHOICES: { id: Lean, text: string, short: string }[] = [
+  { id: 'camera', text: 'Looks camera-made', short: 'Camera' },
+  { id: 'drawn', text: 'Looks hand-drawn or illustrated', short: 'Hand-drawn' },
+  { id: 'ai', text: 'Looks AI-made', short: 'AI' },
+  { id: 'unsure', text: 'Can\'t tell yet', short: 'Can\'t tell' },
+]
+
+/** The "How was it made?" choices, in order (also the room's final vote). */
+export const LABEL_ORDER: Label[] = ['camera', 'edited', 'drawn', 'assisted', 'ai', 'unsure']
+
+/** Did a first impression point the right way? */
+export function leanMatches(lean: Lean | null, truth: Label) {
+  return (lean === 'camera' && (truth === 'camera' || truth === 'edited'))
+    || (lean === 'drawn' && truth === 'drawn')
+    || (lean === 'ai' && (truth === 'ai' || truth === 'assisted'))
+}
+
+/** Colours for each choice, used in the room's vote bars. */
+export const CHOICE_COLORS: Record<string, string> = {
+  camera: '#3f8fb0', edited: '#9ad0f5', drawn: '#8a6a9e', assisted: '#f2a0aa', ai: '#d1495b', unsure: '#f4c94f',
+}
+
+/** The room's votes as readable pairs, in the order the choices were offered. */
+export function voteList(v: Partial<Record<string, number>>, first: boolean) {
+  const opts = first ? LEAN_CHOICES.map(c => ({ id: c.id as string, name: c.short })) : LABEL_ORDER.map(l => ({ id: l as string, name: LABELS[l].name }))
+  return opts.map(o => ({ ...o, n: v[o.id] ?? 0, color: CHOICE_COLORS[o.id]! }))
 }
 
 export const LEAN_WORDS: Record<Lean, string> = {
   camera: 'leans camera',
+  drawn: 'leans hand-drawn',
   ai: 'leans AI',
   unsure: 'not sure',
 }
@@ -102,7 +133,9 @@ export interface Picture {
   cues: Cue[]
   verdict: string
   lesson: string
-  /** Where the picture really came from, for facilitators (not shown to players). */
+  /** The picture's credential, shown on the reveal: what made it and who. */
+  madeWith?: string
+  /** Where the picture really came from, for facilitators and the credits. */
   source?: string
   /** `draft` entries came from the import pipeline and still need a human check. */
   status?: 'reviewed' | 'draft'
