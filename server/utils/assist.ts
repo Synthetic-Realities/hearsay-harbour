@@ -20,7 +20,62 @@ export interface Suggestion {
 
 const DEFAULT_MODEL: Partial<Record<Provider, string>> = { anthropic: 'claude-opus-5-5' }
 
+/*
+ * If HH_AI_MODEL is empty, ask the provider which models this key can use (a free listing call,
+ * no picture sent) and pick a suitable one that reads images. Remembered until the server restarts.
+ */
+const autoModels = new Map<string, string>()
+const version = (name: string) => Number((/(\d+(?:\.\d+)?)/.exec(name) ?? [])[1] ?? 0)
+
+async function pickModel(provider: Provider, key: string, ollamaUrl: string): Promise<string> {
+  const cacheKey = `${provider}:${key.slice(-6)}:${ollamaUrl}`
+  if (autoModels.has(cacheKey)) return autoModels.get(cacheKey)!
+  let chosen = ''
+  try {
+    if (provider === 'gemini') {
+      const res = await fetch('https://generativelanguage.googleapis.com/v1beta/models?pageSize=200', { headers: { 'x-goog-api-key': key } })
+      const data = await res.json() as { models?: { name: string, supportedGenerationMethods?: string[] }[] }
+      const names = (data.models ?? [])
+        .filter(m => m.supportedGenerationMethods?.includes('generateContent'))
+        .map(m => m.name.replace(/^models\//, ''))
+        .filter(n => /^gemini-[\d.]+-(flash|pro)$/.test(n))
+      // Prefer the newest Flash model (quick and inexpensive), then the newest Pro.
+      const flash = names.filter(n => n.endsWith('-flash')).sort((a, b) => version(b) - version(a))
+      const pro = names.filter(n => n.endsWith('-pro')).sort((a, b) => version(b) - version(a))
+      chosen = flash[0] ?? pro[0] ?? ''
+    }
+    else if (provider === 'openai') {
+      const res = await fetch('https://api.openai.com/v1/models', { headers: { authorization: `Bearer ${key}` } })
+      const data = await res.json() as { data?: { id: string }[] }
+      const ids = (data.data ?? []).map(m => m.id)
+      // General-purpose GPT models read images; skip audio, realtime, search and dated snapshots.
+      const general = ids.filter(id => /^gpt-[\d.]+o?(-mini)?$/.test(id)).sort((a, b) => version(b) - version(a) || a.length - b.length)
+      chosen = general[0] ?? ''
+    }
+    else if (provider === 'ollama') {
+      const res = await fetch(`${ollamaUrl}/api/tags`)
+      const data = await res.json() as { models?: { name: string }[] }
+      const names = (data.models ?? []).map(m => m.name)
+      chosen = names.find(n => /vision|llava|gemma3|qwen.*vl|minicpm-v|moondream|bakllava/i.test(n)) ?? ''
+    }
+  }
+  catch {}
+  if (chosen) autoModels.set(cacheKey, chosen)
+  return chosen
+}
+
 /** Which provider and model are set up, without ever exposing the key. */
+export async function assistConfigResolved() {
+  const cfg = assistConfig()
+  if (cfg.problem !== 'NEEDS_MODEL') return { ...cfg, auto: false }
+  const model = await pickModel(cfg.provider as Provider, cfg.key, cfg.ollamaUrl)
+  if (model) return { ...cfg, model, problem: '', auto: true }
+  const hint = cfg.provider === 'ollama'
+    ? 'No image-reading model was found in Ollama. Download one (for example a "vision" model), or set HH_AI_MODEL in .env.'
+    : 'Couldn\'t choose a model automatically. Check your key, or set HH_AI_MODEL in .env to a model name from your provider.'
+  return { ...cfg, problem: hint, auto: false }
+}
+
 export function assistConfig() {
   const provider = (process.env.HH_AI_PROVIDER ?? '').trim().toLowerCase() as Provider | ''
   const model = (process.env.HH_AI_MODEL ?? '').trim() || (provider ? DEFAULT_MODEL[provider] ?? '' : '')
@@ -30,7 +85,8 @@ export function assistConfig() {
   if (!provider) problem = 'No AI provider is set. Copy .env.example to .env and set HH_AI_PROVIDER.'
   else if (!['openai', 'gemini', 'anthropic', 'ollama'].includes(provider)) problem = `HH_AI_PROVIDER "${provider}" isn't one of openai, gemini, anthropic or ollama.`
   else if (keyVar && !key) problem = `Add your ${keyVar} to .env.`
-  else if (!model) problem = 'Set HH_AI_MODEL in .env to a vision-capable model from your provider.'
+  // An empty model is filled in automatically (see assistConfigResolved).
+  else if (!model) problem = 'NEEDS_MODEL'
   return { provider, model, key, problem, ollamaUrl: (process.env.HH_OLLAMA_URL ?? 'http://localhost:11434').replace(/\/$/, '') }
 }
 
@@ -100,7 +156,7 @@ async function postJson(url: string, body: unknown, headers: Record<string, stri
 
 /** Ask the configured model about one picture (a data: URL, already resized by the Studio). */
 export async function suggestFields(dataUrl: string): Promise<{ suggestion: Suggestion, provider: string, model: string }> {
-  const cfg = assistConfig()
+  const cfg = await assistConfigResolved()
   if (cfg.problem) throw new Error(cfg.problem)
   const m = /^data:(image\/(?:jpeg|png|webp|gif));base64,(.+)$/.exec(dataUrl)
   if (!m) throw new Error('That picture couldn\'t be read. Try a JPG, PNG or WebP.')

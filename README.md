@@ -163,19 +163,19 @@ No coding needed. You'll edit one small settings file, then restart the game.
    **Cmd + Shift + .** (full stop) to show hidden files. Open the file called `.env` with TextEdit.
    If there's no `.env`, duplicate `.env.example` and rename the copy to exactly `.env`.
    In TextEdit, choose **Format → Make Plain Text** if it offers it.
-3. **Fill in three lines** (everything after the `=`, no spaces or quotation marks), for example:
+3. **Fill in two lines** (everything after the `=`, no spaces or quotation marks), for example:
 
    ```
    HH_AI_PROVIDER=gemini
-   HH_AI_MODEL=the-model-name-from-your-provider
    GEMINI_API_KEY=paste-your-key-here
    ```
 
-   `HH_AI_PROVIDER` is `openai`, `gemini`, `anthropic` or `ollama`. For `HH_AI_MODEL`, copy a current
-   model name that accepts images from your provider's list:
-   [OpenAI](https://platform.openai.com/docs/models), [Gemini](https://ai.google.dev/gemini-api/docs/models),
-   or the name you downloaded in Ollama. (With Anthropic you can leave it empty.) Put your key on the
-   line for your provider; Ollama needs no key.
+   `HH_AI_PROVIDER` is `openai`, `gemini`, `anthropic` or `ollama`. Put your key on the line for your
+   provider; Ollama needs no key. Leave `HH_AI_MODEL` empty and the game picks a suitable model your
+   key can use (asking the provider for its list is free and sends no picture); the Studio shows which
+   one it chose. To use a particular model instead, put its name after `HH_AI_MODEL=`, from
+   [OpenAI's](https://platform.openai.com/docs/models) or [Gemini's](https://ai.google.dev/gemini-api/docs/models)
+   model list, or the name you downloaded in Ollama.
 4. **Save and close the file**, then quit the game (close its Terminal window) and start it again
    from the desktop launcher.
 5. **Switch it on.** Open **Dev Studio: add pictures** on the title screen and turn on **AI assist**.

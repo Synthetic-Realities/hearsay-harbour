@@ -87,7 +87,7 @@ const aiOn = ref((() => {
     return false
   }
 })())
-const aiStatus = ref<{ ready: boolean, provider: string, model: string, problem: string } | null>(null)
+const aiStatus = ref<{ ready: boolean, provider: string, model: string, problem: string, auto?: boolean } | null>(null)
 const aiBusy = ref(false)
 const aiError = ref('')
 const aiFilled = ref(new Set<string>())
@@ -251,7 +251,7 @@ async function save() {
             <span class="knob" aria-hidden="true" />
             <strong>AI assist</strong>
           </label>
-          <span v-if="aiStatus?.ready" class="soft small">{{ aiStatus.provider }} · {{ aiStatus.model }}</span>
+          <span v-if="aiStatus?.ready" class="soft small">{{ aiStatus.provider }} · {{ aiStatus.model }}{{ aiStatus.auto ? ' (chosen for you)' : '' }}</span>
           <span v-else class="soft small">{{ aiStatus?.problem ?? 'Checking…' }}</span>
           <a class="setup-link" href="https://github.com/IntoTheDigital/hearsay-harbour#setting-up-ai-assist-step-by-step" target="_blank" rel="noopener">
             {{ aiStatus?.ready ? 'Setup guide' : 'How do I set this up?' }} <span aria-hidden="true">↗</span><span class="sr-only">(opens in a new tab)</span>
