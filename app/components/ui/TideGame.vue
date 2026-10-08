@@ -4,7 +4,7 @@ import { sfx } from '~/audio/sfx'
 /*
  * Tide search: a little fishing game standing in for reverse image search.
  * A float sweeps along the line; reel when it's over the ripple. Three catches pull
- * up the older copies. Misses cost nothing but a moment: it's a cozy game.
+ * up the older copies. Misses cost nothing but a moment: it's a cosy game.
  */
 const emit = defineEmits<{ done: [] }>()
 const NEED = 3

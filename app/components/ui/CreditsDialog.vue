@@ -39,7 +39,7 @@ const linkify = (s: string) => s.split(/(https?:\/\/\S+?)(?=[),.]?(?:\s|$))/g)
       <p>
         The look and feel, and some of the code, come from
         <a href="https://github.com/zernonia/hivebound" target="_blank" rel="noopener">Hivebound</a> by zernonia,
-        a cozy bee exploration game, used under the MIT Licence.
+        a cosy bee exploration game, used under the MIT Licence.
       </p>
     </section>
 

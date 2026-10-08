@@ -19,7 +19,7 @@ export default defineNuxtConfig({
       htmlAttrs: { lang: 'en' },
       meta: [
         { name: 'viewport', content: 'width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no' },
-        { name: 'description', content: 'A cozy island game about noticing, discussing, checking and reflecting before you share a picture.' },
+        { name: 'description', content: 'A cosy island game about noticing, discussing, checking and reflecting before you share a picture.' },
         { name: 'theme-color', content: '#8fd3e8' },
         { name: 'apple-mobile-web-app-capable', content: 'yes' },
         { name: 'mobile-web-app-capable', content: 'yes' },

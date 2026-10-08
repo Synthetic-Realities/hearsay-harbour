@@ -172,7 +172,7 @@ const REVIEW_SCHEMA = {
   properties: { approved: { type: 'boolean' }, fixes: { type: 'array', items: { type: 'string' } }, corrected: PICTURE_SCHEMA },
 }
 
-const RULES = `Hearsay Harbour is a cozy island game for ages 10 and up about working out how a picture was made before sharing it (Notice, Discuss, Check, Reflect). Write warmly and plainly.
+const RULES = `Hearsay Harbour is a cosy island game for ages 10 and up about working out how a picture was made before sharing it (Notice, Discuss, Check, Reflect). Write warmly and plainly.
 
 Ground rules:
 - How the picture was made ("truth") is given by the facilitator. Never contradict it and never decide it from the pixels.
@@ -187,7 +187,7 @@ The villagers (first person, one or two short sentences each, each with a lean t
 - jim: Grumpy Professor Jim, a conspiracy theorist who says EVERY picture is AI (lean always "ai"); funny rather than mean.
 Apart from Jim, at least one villager should lean differently from the others; on harder levels at least one should be wrong.
 
-Fields: title (2 to 5 words); arrival (a cozy one-liner about how it reaches the harbour); claim (the caption it was shared with); close (labels near enough to the truth for partial credit, never the truth itself; labels are camera, edited, drawn, assisted, ai, unsure); checks.tide (reverse image search), checks.seal (content credentials), checks.crate (file details), each with headline, body, strength (strong, some or none) and points (the lean it supports, or "none"); cues (3 or 4 spots, x and y from 0 to 1 measured from the top-left, placed exactly on the feature the note describes; include one that looks convincing but proves nothing); verdict (two sentences on how it was made); lesson (the one idea to carry forward).`
+Fields: title (2 to 5 words); arrival (a cosy one-liner about how it reaches the harbour); claim (the caption it was shared with); close (labels near enough to the truth for partial credit, never the truth itself; labels are camera, edited, drawn, assisted, ai, unsure); checks.tide (reverse image search), checks.seal (content credentials), checks.crate (file details), each with headline, body, strength (strong, some or none) and points (the lean it supports, or "none"); cues (3 or 4 spots, x and y from 0 to 1 measured from the top-left, placed exactly on the feature the note describes; include one that looks convincing but proves nothing); verdict (two sentences on how it was made); lesson (the one idea to carry forward).`
 
 /** Turn an inbox picture into a draft entry and put it in the right level. */
 export async function importPicture(file: string) {

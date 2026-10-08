@@ -9,7 +9,7 @@ const v = computed(() => VILLAGERS[props.who])
 const take = computed(() => game.picture.takes[props.who])
 const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches
 
-// Type the line out, with a little chatter, like a cozy game.
+// Type the line out, with a little chatter, like a cosy game.
 const shown = ref(reduced ? take.value.text.length : 0)
 const done = computed(() => shown.value >= take.value.text.length)
 let timer: ReturnType<typeof setInterval> | undefined

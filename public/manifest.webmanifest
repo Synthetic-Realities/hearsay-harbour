@@ -1,7 +1,7 @@
 {
   "name": "Hearsay Harbour",
   "short_name": "Hearsay",
-  "description": "A cozy island game about noticing, discussing, checking and reflecting before you share a picture.",
+  "description": "A cosy island game about noticing, discussing, checking and reflecting before you share a picture.",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",

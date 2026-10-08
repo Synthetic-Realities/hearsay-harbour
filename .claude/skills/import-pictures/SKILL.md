@@ -59,7 +59,7 @@ image generation)" or "Phone camera, by Dr Sam Martin").
 3. **Draft (agent 1, the author).** Spawn one Agent per picture (in parallel for several) with:
    the image path (tell it to view the image with Read), the sidecar, the measured file facts, the
    ground rules above, and the house style entry. Ask it to return one JSON `Picture` object:
-   - `id`, `src` (`<id>.<ext>`), `arrival` (a cozy one-liner about how it reaches the harbour),
+   - `id`, `src` (`<id>.<ext>`), `arrival` (a cosy one-liner about how it reaches the harbour),
      `claim` (from the sidecar, or a realistic share caption that matches the picture), `truth`,
      `close` (neighbouring labels that deserve partial credit), `source` and `madeWith` (copied from the
      sidecar; every picture needs a `madeWith` credential, so ask the user if it's missing).

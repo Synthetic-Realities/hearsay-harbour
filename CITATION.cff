@@ -1,6 +1,6 @@
 cff-version: 1.2.0
 message: "If you use Hearsay Harbour, please cite it as below."
-title: "Hearsay Harbour: a cozy game for spotting AI-generated misinformation images"
+title: "Hearsay Harbour: a cosy game for spotting AI-generated misinformation images"
 type: software
 authors:
   - family-names: Martin
@@ -11,7 +11,7 @@ authors:
 abstract: >-
   An academic research project of Synthetic Realities, led by Dr Sam Martin, Smart Data
   Research UK (UKRI) Fellow (Grant number UKRI4010), Manchester Metropolitan University (MMU).
-  A cozy island game that teaches the SDA Vision community workshop method (Notice, Discuss,
+  A cosy island game that teaches the SDA Vision community workshop method (Notice, Discuss,
   Check, Reflect) for working out how a picture was made before sharing it.
 keywords:
   - synthetic media

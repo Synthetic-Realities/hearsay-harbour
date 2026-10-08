@@ -4,7 +4,7 @@
 
 **Play it in your browser:** https://synthetic-realities.github.io/hearsay-harbour/
 
-Hearsay Harbour is a cozy island game about working out how a picture was made before you share it.
+Hearsay Harbour is a cosy island game about working out how a picture was made before you share it.
 It teaches the SDA Vision community workshop method: **Notice → Discuss → Check → Reflect**. It can be
 played alone, in a classroom, or run on a projector as a facilitated workshop.
 

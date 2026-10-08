@@ -31,7 +31,7 @@ function resume() {
           Notice · Discuss · Check · Reflect
         </p>
         <p class="blurb">
-          A cozy island where pictures wash up all day. Can you work out how each one was made before the gull gets everyone sharing?
+          A cosy island where pictures wash up all day. Can you work out how each one was made before the gull gets everyone sharing?
         </p>
         <div v-if="PACKS.length > 1" class="levels" role="radiogroup" aria-label="Choose a level">
           <button

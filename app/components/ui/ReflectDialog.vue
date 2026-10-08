@@ -10,6 +10,19 @@ const caption = ref<Caption | null>(null)
 
 const ORDER: Label[] = LABEL_ORDER
 
+/*
+ * Workshop mode: the room's final show of hands decides how it was made. The label with the
+ * most hands is pinned; a tie pins "Still unsure", because the room is genuinely split.
+ */
+const roomCounts = computed(() => ORDER.map(l => ({ id: l, n: game.record.roomFinal[l] ?? 0 })))
+const roomTop = computed(() => Math.max(...roomCounts.value.map(c => c.n)))
+const roomTied = computed(() => roomTop.value > 0 && roomCounts.value.filter(c => c.n === roomTop.value).length > 1)
+const roomLead = computed<Label | null>(() => {
+  if (roomTop.value <= 0) return null
+  return roomTied.value ? 'unsure' : roomCounts.value.find(c => c.n === roomTop.value)!.id
+})
+const pinned = computed(() => (game.workshop ? roomLead.value : label.value))
+
 const checkedNames = computed(() => {
   const bits = [
     ...rec.value.checked.map(c => CHECKS[c].name.toLowerCase()),
@@ -19,7 +32,7 @@ const checkedNames = computed(() => {
 })
 
 const captions = computed(() => {
-  const l = label.value
+  const l = pinned.value
   const name = l ? LABELS[l].name : '…'
   const careful = l === 'unsure'
     ? `Not sure how this was made yet. Here's what I found: ${checkedNames.value}. Treat with care.`
@@ -63,14 +76,19 @@ const captions = computed(() => {
       </aside>
       <div class="decide">
         <h3>How was it made?</h3>
-        <div class="labels" role="radiogroup" aria-label="How was it made?">
+        <RoomVote v-if="game.workshop" which="roomFinal" title="Room's final vote (show of hands)" class="room-main" />
+        <p v-if="game.workshop" class="room-note">
+          {{ !roomLead ? 'Count the hands for each choice. The room\'s top choice is pinned.' : roomTied ? 'It\'s a tie, so the room\'s answer is pinned as "Still unsure".' : 'The room\'s top choice is pinned.' }}
+        </p>
+        <div class="labels" :class="{ room: game.workshop }" role="radiogroup" aria-label="How was it made?" :aria-disabled="game.workshop">
           <button
             v-for="l in ORDER"
             :key="l"
             role="radio"
-            :aria-checked="label === l"
+            :aria-checked="pinned === l"
             class="opt"
-            :class="[l, { on: label === l }]"
+            :class="[l, { on: pinned === l }]"
+            :disabled="game.workshop"
             @click="label = l"
           >
             <strong>{{ LABELS[l].name }}</strong>
@@ -86,18 +104,17 @@ const captions = computed(() => {
             :aria-checked="caption === c.id"
             class="opt cap hand"
             :class="{ on: caption === c.id }"
-            :disabled="!label"
+            :disabled="!pinned"
             @click="caption = c.id"
           >
             {{ c.text }}
           </button>
         </div>
-        <RoomVote v-if="game.workshop" which="roomFinal" title="Room's final vote (show of hands)" />
       </div>
     </div>
     <template #footer>
-      <button class="big-btn" :disabled="!label || !caption" @click="label && caption && game.pin(label, caption)">
-        Pin it to the board
+      <button class="big-btn" :disabled="!pinned || !caption" @click="pinned && caption && game.pin(pinned, caption)">
+        {{ game.workshop ? 'Pin the room\'s answer' : 'Pin it to the board' }}
       </button>
     </template>
   </UiDialog>
@@ -172,6 +189,24 @@ ul {
 .opt:disabled {
   opacity: 0.5;
   cursor: not-allowed;
+}
+.room-main {
+  margin: 0 0 6px;
+}
+.room-note {
+  margin: 0 0 8px;
+  font-size: 0.85rem;
+  color: var(--ink-soft);
+}
+/* In workshop mode the room decides: the single labels only show what gets pinned. */
+.labels.room .opt:disabled {
+  cursor: default;
+}
+.labels.room .opt.on:disabled {
+  opacity: 1;
+}
+.labels.room .opt:not(.on):disabled {
+  opacity: 0.45;
 }
 .opt.on {
   border-color: var(--honey-deep);
