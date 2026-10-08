@@ -70,7 +70,68 @@ const madeWith = ref('')
 const notes = ref('')
 const busy = ref(false)
 const message = ref<{ kind: 'ok' | 'error', text: string } | null>(null)
-const inbox = ref<{ file: string, notes: { truth: string, level: number, source: string } | null }[]>([])
+const inbox = ref<{ file: string, notes: Record<string, any> | null }[]>([])
+const tab = ref<'add' | 'inbox' | 'game'>('add')
+
+const TRUTH_NAMES: Record<string, string> = { camera: 'Camera-made', edited: 'Edited photo', drawn: 'Hand-drawn or illustrated', assisted: 'AI-assisted', ai: 'AI-generated', unknown: 'Don\'t know yet' }
+function destination(n: Record<string, any> | null) {
+  const t = n?.target
+  const pack = PACKS.find(p => p.id === t?.packId)
+  if (t?.mode === 'replace') return `replaces "${pack?.pictures.find(x => x.id === t.replaces)?.title ?? t.replaces}" in Level ${pack?.level ?? '?'}`
+  if (t?.mode === 'add') return `adds to Level ${pack?.level ?? '?'}${pack ? ` · ${pack.title}` : ''}`
+  return `new Level ${n?.level ?? '?'}${t?.levelTitle ? ` · ${t.levelTitle}` : ''}`
+}
+
+// Inbox actions.
+const confirmDelete = ref('')
+const importing = ref('')
+const importStep = ref('')
+const results = ref<Record<string, { kind: 'ok' | 'error', text: string }>>({})
+async function deleteInbox(file: string) {
+  await $fetch('/api/inbox/delete', { method: 'POST', body: { file } })
+  confirmDelete.value = ''
+  await refresh()
+}
+async function importInbox(file: string) {
+  importing.value = file
+  importStep.value = 'Writing and checking… (about a minute)'
+  try {
+    const res = await $fetch<{ title: string, where: string, fixes: string[] }>('/api/inbox/import', { method: 'POST', body: { file } })
+    results.value[file] = { kind: 'ok', text: `Imported "${res.title}": ${res.where}, as a draft.${res.fixes.length ? ` The checking pass fixed: ${res.fixes.join('; ')}.` : ''} Reload the game to play it.` }
+    lastImported.value = results.value[file]!.text
+    await Promise.all([refresh(), loadPacks()])
+  }
+  catch (e) {
+    const err = e as { data?: { statusMessage?: string } }
+    results.value[file] = { kind: 'error', text: err.data?.statusMessage ?? 'The import failed. Check the dev server window for details.' }
+  }
+  finally {
+    importing.value = ''
+  }
+}
+const lastImported = ref('')
+
+// Pictures in the game.
+const gamePacks = ref<{ id: string, level: number, title: string, pictures: { id: string, title: string, src: string, truth: string, status: string }[] }[]>([])
+const confirmRemove = ref('')
+const gameMessage = ref('')
+async function loadPacks() {
+  gamePacks.value = await $fetch('/api/packs').catch(() => []) as typeof gamePacks.value
+}
+async function removeFromGame(packId: string, pictureId: string) {
+  const res = await $fetch<{ keptIn: string }>('/api/packs/remove', { method: 'POST', body: { packId, pictureId } })
+  confirmRemove.value = ''
+  gameMessage.value = `Removed. A copy is kept in ${res.keptIn}. Reload the game to see the change.`
+  await loadPacks()
+}
+async function setStatus(packId: string, pictureId: string, status: 'draft' | 'reviewed') {
+  await $fetch('/api/packs/status', { method: 'POST', body: { packId, pictureId, status } })
+  await loadPacks()
+}
+watch(tab, (t) => {
+  if (t === 'game') void loadPacks()
+  if (t === 'inbox') void refresh()
+})
 const dragging = ref(false)
 const title = ref('')
 
@@ -215,7 +276,7 @@ async function save() {
   if (aiUsed.value) form.append('aiAssist', `${aiUsed.value.provider}:${aiUsed.value.model}:${[...aiFilled.value].join(',')}`)
   try {
     const res = await $fetch<{ file: string }>('/api/inbox', { method: 'POST', body: form })
-    message.value = { kind: 'ok', text: `Saved ${res.file} to content-inbox.` }
+    message.value = { kind: 'ok', text: `Saved ${res.file} to the inbox. Open the Inbox tab to import it into the game.` }
     file.value = null
     preview.value = ''
     claim.value = ''
@@ -242,8 +303,106 @@ async function save() {
 </script>
 
 <template>
-  <UiDialog kicker="Dev Studio" title="Add pictures for new levels" wide @close="game.close()">
-    <div class="layout">
+  <UiDialog kicker="Dev Studio" title="Pictures and levels" wide @close="game.close()">
+    <div class="tabs" role="tablist" aria-label="Dev Studio">
+      <button type="button" role="tab" :aria-selected="tab === 'add'" :class="{ on: tab === 'add' }" @click="tab = 'add'">
+        Add a picture
+      </button>
+      <button type="button" role="tab" :aria-selected="tab === 'inbox'" :class="{ on: tab === 'inbox' }" @click="tab = 'inbox'">
+        Inbox <span class="count">{{ inbox.length }}</span>
+      </button>
+      <button type="button" role="tab" :aria-selected="tab === 'game'" :class="{ on: tab === 'game' }" @click="tab = 'game'">
+        Pictures in the game
+      </button>
+    </div>
+
+    <!-- Inbox: pictures waiting to go into the game -->
+    <section v-if="tab === 'inbox'" class="panel-list">
+      <p v-if="!inbox.length" class="soft">
+        The inbox is empty. Add a picture on the first tab.
+      </p>
+      <p v-else class="soft small">
+        <strong>Import into the game</strong> uses your AI assist model twice: one pass writes the villagers' lines, the checks and the spots to notice; a second, separate pass checks that draft against the picture and your notes. The picture then appears in its level as a draft, for you to play and review. {{ aiStatus?.ready ? '' : 'Set up AI assist first (see the link on the first tab).' }}
+      </p>
+      <article v-for="i in inbox" :key="i.file" class="item">
+        <img :src="`/api/inbox/file?name=${encodeURIComponent(i.file)}`" alt="">
+        <div class="item-words">
+          <strong>{{ i.notes?.title || i.file }}</strong>
+          <span class="soft small">{{ TRUTH_NAMES[i.notes?.truth ?? ''] ?? 'How it was made: not recorded' }} · {{ destination(i.notes) }}</span>
+          <span v-if="i.notes?.claim" class="soft small">“{{ i.notes.claim }}”</span>
+          <p v-if="results[i.file]" class="msg" :class="results[i.file]!.kind" role="status">
+            {{ results[i.file]!.text }}
+          </p>
+        </div>
+        <div class="item-actions">
+          <template v-if="confirmDelete === i.file">
+            <span class="small">Delete this picture? It moves to <code>content-inbox/deleted/</code>.</span>
+            <button type="button" class="big-btn quiet" @click="deleteInbox(i.file)">
+              Yes, delete
+            </button>
+            <button type="button" class="again" @click="confirmDelete = ''">
+              Keep it
+            </button>
+          </template>
+          <template v-else>
+            <button type="button" class="big-btn" :disabled="!aiStatus?.ready || !!importing || i.notes?.truth === 'unknown'" :title="i.notes?.truth === 'unknown' ? 'Choose how it was made first' : ''" @click="importInbox(i.file)">
+              {{ importing === i.file ? importStep : 'Import into the game' }}
+            </button>
+            <button type="button" class="again" :disabled="!!importing" @click="confirmDelete = i.file">
+              Delete
+            </button>
+          </template>
+        </div>
+      </article>
+      <p class="soft small">
+        Prefer an AI coding agent? See “Adding pictures for new levels” in the
+        <a href="https://github.com/IntoTheDigital/hearsay-harbour#adding-pictures-for-new-levels" target="_blank" rel="noopener">README ↗</a>.
+      </p>
+    </section>
+
+    <!-- Every level and its pictures -->
+    <section v-else-if="tab === 'game'" class="panel-list">
+      <p class="soft small">
+        Changes here apply straight away (reload the game to play them). Removed pictures are kept in <code>content-inbox/removed/</code>, so they can be put back.
+      </p>
+      <div v-for="p in gamePacks" :key="p.id" class="level-group">
+        <h3>Level {{ p.level }} · {{ p.title }}</h3>
+        <p v-if="!p.pictures.length" class="soft small">
+          No pictures left in this level.
+        </p>
+        <article v-for="x in p.pictures" :key="x.id" class="item">
+          <img :src="pictureUrl(x.src)" alt="">
+          <div class="item-words">
+            <strong>{{ x.title }}</strong>
+            <span class="soft small">{{ TRUTH_NAMES[x.truth] ?? x.truth }} · <span class="status" :class="x.status">{{ x.status === 'draft' ? 'Draft' : 'Reviewed' }}</span></span>
+          </div>
+          <div class="item-actions">
+            <template v-if="confirmRemove === `${p.id}/${x.id}`">
+              <span class="small">Remove from the game? A copy is kept.</span>
+              <button type="button" class="big-btn quiet" @click="removeFromGame(p.id, x.id)">
+                Yes, remove
+              </button>
+              <button type="button" class="again" @click="confirmRemove = ''">
+                Keep it
+              </button>
+            </template>
+            <template v-else>
+              <button type="button" class="again" @click="setStatus(p.id, x.id, x.status === 'draft' ? 'reviewed' : 'draft')">
+                {{ x.status === 'draft' ? 'Mark reviewed' : 'Mark as draft' }}
+              </button>
+              <button type="button" class="again danger" @click="confirmRemove = `${p.id}/${x.id}`">
+                Remove from game
+              </button>
+            </template>
+          </div>
+        </article>
+      </div>
+      <p v-if="gameMessage" class="msg ok" role="status">
+        {{ gameMessage }}
+      </p>
+    </section>
+
+    <div v-else class="layout">
       <form class="form" @submit.prevent="save">
         <div class="ai-bar" :class="{ on: aiOn }">
           <label class="switch" for="studio-ai">
@@ -384,22 +543,16 @@ async function save() {
       </form>
 
       <aside class="side">
-        <h3>Waiting in the inbox ({{ inbox.length }})</h3>
-        <ul v-if="inbox.length" class="list">
-          <li v-for="i in inbox" :key="i.file">
-            <strong>{{ i.file }}</strong>
-            <span class="soft">{{ i.notes ? `${i.notes.truth} · level ${i.notes.level}` : 'no notes yet' }}</span>
-          </li>
-        </ul>
-        <p v-else class="soft">
-          Nothing yet. You can also copy pictures straight into the <code>content-inbox</code> folder.
+        <h3>Inbox</h3>
+        <p class="soft">
+          {{ inbox.length ? `${inbox.length} picture${inbox.length === 1 ? ' is' : 's are'} waiting to go into the game.` : 'Nothing waiting yet.' }}
         </p>
-        <h3>Then import them</h3>
-        <ol class="steps">
-          <li>In an AI coding agent that can run skills, open this project and run <code>/import-pictures</code>.</li>
-          <li>One AI pass drafts each picture's villager lines, checks and spots. A second, separate pass reviews the draft against the picture and your notes.</li>
-          <li>New pictures arrive as <strong>drafts</strong> in a level pack. Play them, then mark them reviewed.</li>
-        </ol>
+        <button type="button" class="big-btn quiet" @click="tab = 'inbox'">
+          Open the inbox
+        </button>
+        <p class="soft small">
+          From the inbox you can import a picture into the game (your AI assist model writes it up, and a second pass checks it) or delete it.
+        </p>
       </aside>
     </div>
   </UiDialog>
@@ -414,6 +567,100 @@ async function save() {
 .form {
   display: grid;
   gap: 8px;
+}
+.tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 0 0 16px;
+}
+.tabs button {
+  padding: 8px 16px;
+  border-radius: 999px;
+  border: 2px solid var(--line);
+  background: #fff;
+  font-weight: 600;
+}
+.tabs button.on {
+  border-color: var(--honey-deep);
+  background: #fff6dd;
+}
+.count {
+  display: inline-grid;
+  place-items: center;
+  min-width: 22px;
+  height: 22px;
+  margin-left: 4px;
+  padding: 0 6px;
+  border-radius: 999px;
+  background: var(--honey);
+  font-size: 0.8rem;
+}
+.panel-list {
+  display: grid;
+  gap: 10px;
+}
+.item {
+  display: grid;
+  grid-template-columns: 72px minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: center;
+  padding: 10px;
+  border-radius: 16px;
+  border: 2px solid var(--line);
+  background: #fff;
+}
+.item img {
+  width: 72px;
+  height: 72px;
+  object-fit: cover;
+  border-radius: 10px;
+}
+.item-words {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+.item-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+  justify-content: flex-end;
+  max-width: 320px;
+}
+.item-actions .big-btn {
+  min-height: 40px;
+  font-size: 0.9rem;
+}
+.again.danger {
+  border-color: #f2c2c8;
+  color: var(--ai);
+}
+.status.draft {
+  color: #7a5a92;
+  font-weight: 600;
+}
+.status.reviewed {
+  color: var(--leaf-deep);
+  font-weight: 600;
+}
+.level-group h3 {
+  margin: 8px 0 6px;
+}
+@media (max-width: 640px) {
+  .item {
+    grid-template-columns: 56px minmax(0, 1fr);
+  }
+  .item img {
+    width: 56px;
+    height: 56px;
+  }
+  .item-actions {
+    grid-column: 1 / -1;
+    justify-content: flex-start;
+    max-width: none;
+  }
 }
 .dest-fields {
   display: grid;

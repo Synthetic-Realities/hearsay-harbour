@@ -112,18 +112,28 @@ screen lets players choose a level.
 
 ### Adding pictures for new levels
 
-1. Run `npm run dev` and choose **Dev Studio: add pictures** on the title screen (or copy images into
-   `content-inbox/`). Record how each picture was really made, its credential, and where it came from,
-   and choose **where it goes**: a new level, an existing level, or in place of an existing picture
-   (the import keeps a copy of anything it replaces). Not sure how a picture was made? The Studio's
-   **second opinion** panel, as in SDA Vision, copies a checking prompt and opens Gemini (SynthID) or
-   OpenAI's image verifier; paste their replies back in as evidence to weigh, not a verdict.
-2. Run the **`/import-pictures`** agent skill (`.claude/skills/import-pictures/SKILL.md`) in an AI coding
-   agent that supports skills. One agent drafts each picture's villager lines, checks and spots; a
-   second, independent agent reviews the draft against the picture and the notes. The import never
-   guesses how a picture was made and never invents where it came from.
-3. New entries arrive in the right level pack marked `"status": "draft"`. Play them, edit anything, then
-   change the status to `"reviewed"`.
+Everything happens in the **Dev Studio** (run the game locally with the desktop launcher or `npm run dev`,
+then choose **Dev Studio** on the title screen). It has three tabs:
+
+1. **Add a picture.** Drop a picture in and record how it was really made, its credential, where it
+   came from, and **where it goes**: a new level, an existing level, or in place of an existing picture.
+   With AI assist switched on, your own model suggests the title, caption and notes. Not sure how a
+   picture was made? The **second opinion** panel, as in SDA Vision, copies a checking prompt and opens
+   Gemini (SynthID) or OpenAI's image verifier; paste their replies back in as evidence to weigh, not a
+   verdict.
+2. **Inbox.** Pictures wait here. **Import into the game** uses your AI assist model twice: one pass
+   writes the villagers' lines, the checks and the spots to notice; a second, separate pass checks that
+   draft against the picture and your notes. The facts you entered always win. The picture then appears
+   in its level as a **draft**. **Delete** moves a picture to `content-inbox/deleted/`.
+3. **Pictures in the game.** Every level and its pictures. **Mark reviewed** once you've played and
+   checked a draft; **Remove from game** takes a picture out (a copy is kept in
+   `content-inbox/removed/`, and replaced pictures in `content-inbox/replaced/`, so nothing is lost).
+
+Reload the game to play your changes.
+
+**Prefer an AI coding agent?** The same import is also written as an agent skill
+(`.claude/skills/import-pictures/SKILL.md`) that any coding agent supporting skill files can run with
+`/import-pictures`, using its own model and account.
 
 See `content-inbox/README.md` for the details.
 

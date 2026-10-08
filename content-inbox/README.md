@@ -23,12 +23,10 @@ Drop new pictures here to turn them into new levels.
    not a verdict, so you still choose (or leave it as "Don't know yet").
    The Studio also asks **where it goes**: a new level, an existing level, or in place of an existing
    picture. Replacing keeps a copy of the old picture in `replaced/`.
-3. **Import.** In an AI coding agent that can run skills, open this project and run `/import-pictures`
-   (the skill is in `.claude/skills/import-pictures/SKILL.md`). One agent drafts the villagers'
-   lines, the check findings and the spots; a second agent reviews the draft against the picture.
-   Entries arrive in `app/packs/level-<N>-*.json` marked `"status": "draft"`, and the files move to
-   `imported/`.
-4. **Review.** Play the level, edit anything in the pack file, and change `"status"` to `"reviewed"`.
-   `npm run validate` checks every pack.
+3. **Import.** In the Studio's **Inbox** tab, choose **Import into the game**. Your AI assist model
+   drafts the entry and a second pass checks it. It lands in the right level as a `"status": "draft"`,
+   and the files move to `imported/`. (Developers can run the `/import-pictures` agent skill instead.)
+4. **Review.** Play the level, then **Mark reviewed** in the **Pictures in the game** tab. Remove a
+   picture there too; a copy is kept in `removed/`. Deleted inbox pictures go to `deleted/`.
 
 Pictures in this folder are not published with the game and are ignored by git.

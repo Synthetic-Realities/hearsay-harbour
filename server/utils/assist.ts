@@ -154,11 +154,14 @@ async function postJson(url: string, body: unknown, headers: Record<string, stri
   return data
 }
 
-/** Ask the configured model about one picture (a data: URL, already resized by the Studio). */
-export async function suggestFields(dataUrl: string): Promise<{ suggestion: Suggestion, provider: string, model: string }> {
+/**
+ * Ask the configured model one question about one picture (a data: URL) and return its text.
+ * `schema` asks for structured JSON where the provider supports it.
+ */
+export async function askModel(opts: { system: string, user: string, dataUrl: string, schema?: Record<string, unknown> }) {
   const cfg = await assistConfigResolved()
   if (cfg.problem) throw new Error(cfg.problem)
-  const m = /^data:(image\/(?:jpeg|png|webp|gif));base64,(.+)$/.exec(dataUrl)
+  const m = /^data:(image\/(?:jpeg|png|webp|gif));base64,(.+)$/.exec(opts.dataUrl)
   if (!m) throw new Error('That picture couldn\'t be read. Try a JPG, PNG or WebP.')
   const [, mediaType, data] = m as unknown as [string, 'image/jpeg' | 'image/png' | 'image/webp' | 'image/gif', string]
   let text = ''
@@ -171,25 +174,25 @@ export async function suggestFields(dataUrl: string): Promise<{ suggestion: Sugg
       // If a safety check declines, the API retries on a suitable fallback model.
       betas: ['server-side-fallback-2026-07-01'],
       fallbacks: 'default',
-      output_config: { effort: 'medium', format: { type: 'json_schema', schema: SCHEMA } },
-      system: SYSTEM,
+      output_config: { effort: 'medium', ...(opts.schema ? { format: { type: 'json_schema' as const, schema: opts.schema } } : {}) },
+      system: opts.system,
       messages: [{
         role: 'user',
         content: [
           { type: 'image', source: { type: 'base64', media_type: mediaType, data } },
-          { type: 'text', text: USER },
+          { type: 'text', text: opts.user },
         ],
       }],
     })
-    if (res.stop_reason === 'refusal') throw new Error('The model declined to describe this picture.')
+    if (res.stop_reason === 'refusal') throw new Error('The model declined to work with this picture.')
     for (const block of res.content) if (block.type === 'text') text += block.text
   }
   else if (cfg.provider === 'gemini') {
     const res = await postJson(
       `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(cfg.model)}:generateContent`,
       {
-        systemInstruction: { parts: [{ text: SYSTEM }] },
-        contents: [{ role: 'user', parts: [{ inline_data: { mime_type: mediaType, data } }, { text: USER }] }],
+        systemInstruction: { parts: [{ text: opts.system }] },
+        contents: [{ role: 'user', parts: [{ inline_data: { mime_type: mediaType, data } }, { text: opts.user }] }],
         generationConfig: { responseMimeType: 'application/json' },
       },
       { 'x-goog-api-key': cfg.key },
@@ -202,12 +205,25 @@ export async function suggestFields(dataUrl: string): Promise<{ suggestion: Sugg
     const res = await postJson(url, {
       model: cfg.model,
       messages: [
-        { role: 'system', content: SYSTEM },
-        { role: 'user', content: [{ type: 'text', text: USER }, { type: 'image_url', image_url: { url: dataUrl } }] },
+        { role: 'system', content: opts.system },
+        { role: 'user', content: [{ type: 'text', text: opts.user }, { type: 'image_url', image_url: { url: opts.dataUrl } }] },
       ],
     }, cfg.provider === 'openai' ? { authorization: `Bearer ${cfg.key}` } : {})
     text = res.choices?.[0]?.message?.content ?? ''
   }
+  return { text, provider: cfg.provider, model: cfg.model }
+}
 
-  return { suggestion: parse(text), provider: cfg.provider, model: cfg.model }
+/** Pull the first JSON object out of a model's reply (it may be wrapped in a code block). */
+export function jsonFrom(text: string): any {
+  const start = text.indexOf('{')
+  const end = text.lastIndexOf('}')
+  if (start < 0 || end < start) throw new Error('The model didn\'t return the expected answer. Try again, or try another model.')
+  return JSON.parse(text.slice(start, end + 1))
+}
+
+/** Ask the configured model about one picture (a data: URL, already resized by the Studio). */
+export async function suggestFields(dataUrl: string): Promise<{ suggestion: Suggestion, provider: string, model: string }> {
+  const res = await askModel({ system: SYSTEM, user: USER, dataUrl, schema: SCHEMA })
+  return { suggestion: parse(res.text), provider: res.provider, model: res.model }
 }
