@@ -18,6 +18,11 @@ Drop new pictures here to turn them into new levels.
    The import never guesses this. Add `"madeWith"` too (e.g. `"ChatGPT (OpenAI image generation)"`): players
    see it as the picture's credential at the reveal.
    `source` is the only place the checks get their facts from, so be as specific as you can.
+   Not sure how it was made? The Studio's **second opinion** panel copies a checking prompt and opens
+   Gemini (SynthID) or OpenAI's image verifier; paste their replies back in. They're evidence to weigh,
+   not a verdict, so you still choose (or leave it as "Don't know yet").
+   The Studio also asks **where it goes**: a new level, an existing level, or in place of an existing
+   picture. Replacing keeps a copy of the old picture in `replaced/`.
 3. **Import.** In an AI coding agent that can run skills, open this project and run `/import-pictures`
    (the skill is in `.claude/skills/import-pictures/SKILL.md`). One agent drafts the villagers'
    lines, the check findings and the spots; a second agent reviews the draft against the picture.

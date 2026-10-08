@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { PACKS } from '~/utils/content'
+import { PACKS, pictureUrl } from '~/utils/content'
 import { useGame } from '~/stores/game'
 
 /*
@@ -11,7 +11,59 @@ const game = useGame()
 const file = ref<File | null>(null)
 const preview = ref('')
 const truth = ref('')
-const level = ref(Math.max(2, ...PACKS.map(p => p.level)))
+/*
+ * Where the picture goes: a brand-new level, an existing level, or in place of a picture that's
+ * already in a level. The import makes the change (and keeps a copy of anything it replaces).
+ */
+const mode = ref<'new' | 'add' | 'replace'>('new')
+const level = ref(Math.max(...PACKS.map(p => p.level)) + 1)
+const levelTitle = ref('')
+const levelBlurb = ref('')
+const packId = ref(PACKS[0]?.id ?? '')
+const replaces = ref('')
+const pack = computed(() => PACKS.find(p => p.id === packId.value))
+const replacedPic = computed(() => pack.value?.pictures.find(p => p.id === replaces.value))
+watch(packId, () => (replaces.value = ''))
+
+/*
+ * Second opinions (as in SDA Vision): when you don't know how a picture was made, ask Gemini
+ * (which can check Google's SynthID watermark) or OpenAI's image verifier, then paste the reply.
+ * They're evidence for you to weigh, not a verdict.
+ */
+const geminiReply = ref('')
+const openaiReply = ref('')
+const soToast = ref('')
+const soPrompt = computed(() =>
+  'I am checking whether a media file may be AI-generated or AI-edited for research. '
+  + 'Please give your honest assessment of how synthetic it looks and why, naming the key tells, '
+  + 'and note any content-provenance or watermark signal you can see. '
+  + 'Keep it brief: one short paragraph, no more than about 80 words. End with a one-line assessment '
+  + '(for example: likely synthetic / partly edited / likely authentic) and your confidence. '
+  + 'Treat this as one evidence signal for a human to weigh, not a final verdict. '
+  + `(File: ${file.value?.name ?? 'the attached image'})`)
+async function copyPrompt() {
+  try {
+    await navigator.clipboard.writeText(soPrompt.value)
+    return true
+  }
+  catch {
+    return false
+  }
+}
+async function askGemini() {
+  const ok = await copyPrompt()
+  window.open('https://gemini.google.com/app', '_blank', 'noopener,noreferrer')
+  soToast.value = ok
+    ? 'Prompt copied. Paste it into a fresh Gemini chat and attach your picture.'
+    : 'Copying was blocked: copy the prompt below into Gemini, then attach your picture.'
+}
+function askOpenAI() {
+  window.open('https://openai.com/research/verify/', '_blank', 'noopener,noreferrer')
+  soToast.value = 'OpenAI Verify opened. Attach your picture there, review the check\'s coverage and details, then record the result below.'
+}
+async function copyOnly() {
+  soToast.value = (await copyPrompt()) ? 'Prompt copied.' : 'Copying was blocked: select the prompt below and copy it.'
+}
 const claim = ref('')
 const source = ref('')
 const madeWith = ref('')
@@ -141,7 +193,19 @@ async function save() {
   const form = new FormData()
   form.append('image', file.value)
   form.append('truth', truth.value)
-  form.append('level', String(level.value))
+  const targetLevel = mode.value === 'new' ? level.value : (pack.value?.level ?? level.value)
+  form.append('level', String(targetLevel))
+  form.append('mode', mode.value)
+  if (mode.value === 'new') {
+    form.append('levelTitle', levelTitle.value)
+    form.append('levelBlurb', levelBlurb.value)
+  }
+  else {
+    form.append('packId', packId.value)
+  }
+  if (mode.value === 'replace') form.append('replaces', replaces.value)
+  form.append('secondOpinionGemini', geminiReply.value)
+  form.append('secondOpinionOpenAI', openaiReply.value)
   form.append('claim', claim.value)
   form.append('source', source.value)
   form.append('madeWith', madeWith.value)
@@ -159,6 +223,9 @@ async function save() {
     madeWith.value = ''
     notes.value = ''
     title.value = ''
+    geminiReply.value = ''
+    openaiReply.value = ''
+    soToast.value = ''
     aiFilled.value = new Set()
     aiGuess.value = null
     aiUsed.value = null
@@ -216,6 +283,36 @@ async function save() {
               {{ t.text }}
             </label>
           </div>
+          <details class="so" :open="truth === 'unknown'">
+            <summary>Not sure how it was made? Get a second opinion</summary>
+            <div class="so-grid">
+              <button type="button" class="so-btn" :disabled="!file" @click="askGemini">
+                <strong>Ask Gemini (SynthID) for a second opinion</strong>
+                <span>Opens Gemini with a copied checking prompt. Attach your picture there, review the checker's stated coverage and record its reply.</span>
+              </button>
+              <button type="button" class="so-btn" :disabled="!file" @click="askOpenAI">
+                <strong>Verify with OpenAI (images only)</strong>
+                <span>OpenAI's external image check. Attach your picture on that page, review its stated coverage and result details, and record the response below.</span>
+              </button>
+            </div>
+            <p v-if="soToast" class="soft small" role="status">
+              {{ soToast }}
+            </p>
+            <div class="so-prompt">
+              <label for="studio-so-prompt">Gemini checking prompt</label>
+              <button type="button" class="again" @click="copyOnly">
+                Copy prompt
+              </button>
+            </div>
+            <textarea id="studio-so-prompt" readonly rows="3" :value="soPrompt" />
+            <p class="soft small">
+              You choose what to upload on the external site; its account settings and terms apply. Keep the stated check result and its coverage with the reply: a watermark checker only recognises its own company's marks, a general visual opinion covers appearance, and a no-match result leaves the origin open. Use a fresh chat for each picture.
+            </p>
+            <label for="studio-so-gemini">Gemini's reply</label>
+            <textarea id="studio-so-gemini" v-model="geminiReply" rows="2" placeholder="Paste Gemini's reply, including what its check covered" />
+            <label for="studio-so-openai">OpenAI Verify's result</label>
+            <textarea id="studio-so-openai" v-model="openaiReply" rows="2" placeholder="Paste or describe the result and what it covered" />
+          </details>
           <p v-if="aiGuess" class="guess">
             <strong>AI's hunch:</strong> {{ LABEL_NAMES[aiGuess.label] ?? aiGuess.label }} ({{ aiGuess.confidence }} confidence). {{ aiGuess.why }}
             <span class="soft">Only you know how it was really made, so you choose.</span>
@@ -225,10 +322,47 @@ async function save() {
         <label for="studio-title">Title <span class="soft">(a short name)</span> <span v-if="aiFilled.has('title')" class="ai-badge">AI suggested</span></label>
         <input id="studio-title" v-model="title" type="text" placeholder="e.g. Flooded high street">
 
-        <div class="row">
-          <label for="studio-level">Level</label>
-          <input id="studio-level" v-model.number="level" type="number" min="1" max="9">
-        </div>
+        <fieldset class="dest">
+          <legend>Where should it go?</legend>
+          <div class="truths">
+            <label class="truth" :class="{ on: mode === 'new' }"><input v-model="mode" type="radio" name="mode" value="new" class="sr-only">A new level</label>
+            <label class="truth" :class="{ on: mode === 'add' }"><input v-model="mode" type="radio" name="mode" value="add" class="sr-only">Add to an existing level</label>
+            <label class="truth" :class="{ on: mode === 'replace' }"><input v-model="mode" type="radio" name="mode" value="replace" class="sr-only">Replace a picture</label>
+          </div>
+          <div v-if="mode === 'new'" class="dest-fields">
+            <div class="row">
+              <label for="studio-level">Level number</label>
+              <input id="studio-level" v-model.number="level" type="number" min="1" max="20">
+            </div>
+            <label for="studio-level-title">Level name <span class="soft">(for a level that doesn't exist yet)</span></label>
+            <input id="studio-level-title" v-model="levelTitle" type="text" placeholder="e.g. Harder harbour">
+            <label for="studio-level-blurb">One-line description <span class="soft">(shown when choosing a level)</span></label>
+            <input id="studio-level-blurb" v-model="levelBlurb" type="text" placeholder="e.g. Subtler pictures, convincing captions and villagers who disagree.">
+          </div>
+          <div v-else class="dest-fields">
+            <label for="studio-pack">Level</label>
+            <select id="studio-pack" v-model="packId">
+              <option v-for="p in PACKS" :key="p.id" :value="p.id">
+                Level {{ p.level }} · {{ p.title }} ({{ p.pictures.length }} pictures)
+              </option>
+            </select>
+            <template v-if="mode === 'replace' && pack">
+              <label for="studio-replaces">Picture to replace</label>
+              <select id="studio-replaces" v-model="replaces">
+                <option value="" disabled>
+                  Choose a picture…
+                </option>
+                <option v-for="p in pack.pictures" :key="p.id" :value="p.id">
+                  {{ p.title ?? p.id }}
+                </option>
+              </select>
+              <div v-if="replacedPic" class="replacing">
+                <img :src="pictureUrl(replacedPic.src)" alt="">
+                <span>The new picture takes this one's place in the level. The import keeps a copy of the old picture and its text in <code>content-inbox/replaced/</code>, so nothing is lost.</span>
+              </div>
+            </template>
+          </div>
+        </fieldset>
         <label for="studio-claim">Caption it was shared with <span class="soft">(optional)</span> <span v-if="aiFilled.has('claim')" class="ai-badge">AI suggested</span></label>
         <input id="studio-claim" v-model="claim" type="text" placeholder="e.g. Huge flood in town this morning!">
         <label for="studio-made">Made with <span class="soft">(shown to players at the reveal)</span> <span v-if="aiFilled.has('madeWith')" class="ai-badge">Seen in the picture</span></label>
@@ -241,7 +375,7 @@ async function save() {
         <p v-if="message" class="msg" :class="message.kind" role="status">
           {{ message.text }}
         </p>
-        <button class="big-btn" type="submit" :disabled="!file || !truth || busy">
+        <button class="big-btn" type="submit" :disabled="!file || !truth || busy || (mode === 'replace' && !replaces)">
           {{ busy ? 'Saving…' : 'Add to the inbox' }}
         </button>
       </form>
@@ -277,6 +411,89 @@ async function save() {
 .form {
   display: grid;
   gap: 8px;
+}
+.dest-fields {
+  display: grid;
+  gap: 6px;
+  margin-top: 8px;
+}
+select {
+  width: 100%;
+  padding: 8px 12px;
+  border-radius: 12px;
+  border: 2px solid var(--line);
+  background: #fff;
+  font: inherit;
+  color: inherit;
+}
+.replacing {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  padding: 8px;
+  border-radius: 12px;
+  background: #fff8e3;
+  font-size: 0.85rem;
+  font-weight: 400;
+}
+.replacing img {
+  width: 56px;
+  height: 56px;
+  object-fit: cover;
+  border-radius: 8px;
+}
+.so {
+  margin-top: 10px;
+  padding: 8px 12px;
+  border-radius: 14px;
+  border: 2px solid #b9dcea;
+  background: #f4fafc;
+  font-weight: 400;
+}
+.so summary {
+  cursor: pointer;
+  font-weight: 700;
+  color: var(--ai);
+}
+.so-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin: 10px 0 6px;
+}
+.so-btn {
+  display: grid;
+  gap: 4px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 2px solid #b9dcea;
+  background: #eaf6f9;
+  text-align: left;
+}
+.so-btn span {
+  font-size: 0.8rem;
+  color: var(--ink-soft);
+}
+.so-btn:disabled {
+  opacity: 0.5;
+}
+.so-prompt {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 8px;
+}
+.so textarea,
+.so label {
+  margin-top: 4px;
+}
+.so label {
+  display: block;
+}
+@media (max-width: 720px) {
+  .so-grid {
+    grid-template-columns: 1fr;
+  }
 }
 .ai-bar {
   display: flex;

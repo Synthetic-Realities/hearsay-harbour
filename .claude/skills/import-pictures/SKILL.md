@@ -13,6 +13,21 @@ title screen in `npm run dev`). Each picture `name.ext` may have a sidecar `name
   "source": "Generated for the workshop with an image tool, 2026", "notes": "Point out the railings" }
 ```
 
+The sidecar's `target` says where the picture goes:
+- `"mode": "new"`: a new level, numbered `level`, named `levelTitle` with `levelBlurb`. If a pack for
+  that level number already exists, ask the user whether to add to it or pick another number.
+- `"mode": "add"`: append to the existing pack whose `id` is `packId`.
+- `"mode": "replace"`: put the new picture in place of the picture `replaces` in pack `packId`, at the
+  same position. **Confirm with the user before replacing**, and first save the old entry (its JSON)
+  and its image to `content-inbox/replaced/<date>-<old id>/`, so it can be restored. Delete the old
+  image from `public/pictures/` only after that copy exists, and only if no other entry uses it.
+
+`secondOpinions` holds replies the facilitator pasted from Gemini (which can check Google's SynthID
+watermark) and OpenAI's image verifier. They're evidence for the facilitator, not a verdict: they never
+set `truth`. A reported watermark match may be described in the wax seal finding as what the
+facilitator's check found, with its stated coverage; a no-match result leaves the origin open and
+must not be written up as proof the picture is real.
+
 If the sidecar has an `aiAssist` value, an AI model suggested some fields in the Studio (listed after
 the last colon): treat those as unchecked drafts, never as facts about where the picture came from.
 

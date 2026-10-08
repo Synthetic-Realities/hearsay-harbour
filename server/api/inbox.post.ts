@@ -30,6 +30,16 @@ export default defineEventHandler(async (event) => {
     source: field('source'),
     madeWith: field('madeWith'),
     title: field('title'),
+    // Where it goes: a new level, an existing level ('add'), or in place of an existing picture.
+    target: {
+      mode: ['new', 'add', 'replace'].includes(field('mode')) ? field('mode') : 'new',
+      packId: field('packId'),
+      replaces: field('replaces'),
+      levelTitle: field('levelTitle'),
+      levelBlurb: field('levelBlurb'),
+    },
+    // Replies pasted from external checkers (evidence to weigh, not a verdict).
+    secondOpinions: { gemini: field('secondOpinionGemini'), openai: field('secondOpinionOpenAI') },
     // Which fields an AI model suggested (provider:model:fields), so the import treats them as drafts.
     aiAssist: field('aiAssist'),
     notes: field('notes'),

@@ -113,7 +113,11 @@ screen lets players choose a level.
 ### Adding pictures for new levels
 
 1. Run `npm run dev` and choose **Dev Studio: add pictures** on the title screen (or copy images into
-   `content-inbox/`). Record how each picture was really made, its credential, and where it came from.
+   `content-inbox/`). Record how each picture was really made, its credential, and where it came from,
+   and choose **where it goes**: a new level, an existing level, or in place of an existing picture
+   (the import keeps a copy of anything it replaces). Not sure how a picture was made? The Studio's
+   **second opinion** panel, as in SDA Vision, copies a checking prompt and opens Gemini (SynthID) or
+   OpenAI's image verifier; paste their replies back in as evidence to weigh, not a verdict.
 2. Run the **`/import-pictures`** agent skill (`.claude/skills/import-pictures/SKILL.md`) in an AI coding
    agent that supports skills. One agent drafts each picture's villager lines, checks and spots; a
    second, independent agent reviews the draft against the picture and the notes. The import never
