@@ -98,10 +98,23 @@ function toggleMute() {
 }
 // On phones the satchel starts folded so it doesn't cover the island.
 const satchelOpen = ref(window.innerWidth > 640)
+
+/*
+ * The bottom buttons can wrap onto two or three rows on a phone. Their real height is shared
+ * as --bottom-h, so the gull and the Facilitator box always sit just above them.
+ */
+const hudEl = ref<HTMLElement>()
+const bottomEl = ref<HTMLElement>()
+let bottomRo: ResizeObserver | undefined
+onMounted(() => {
+  bottomRo = new ResizeObserver(() => hudEl.value?.style.setProperty('--bottom-h', `${bottomEl.value?.offsetHeight ?? 0}px`))
+  if (bottomEl.value) bottomRo.observe(bottomEl.value)
+})
+onBeforeUnmount(() => bottomRo?.disconnect())
 </script>
 
 <template>
-  <div class="hud">
+  <div ref="hudEl" class="hud">
     <div class="top-left">
       <div class="panel progress">
         <p class="where">
@@ -164,7 +177,7 @@ const satchelOpen = ref(window.innerWidth > 640)
       </button>
     </div>
 
-    <div class="bottom">
+    <div ref="bottomEl" class="bottom">
       <Transition name="rise">
         <button v-if="prompt" class="big-btn action" @click="game.use(game.at!)">
           {{ prompt }} <span class="kbd">Space</span>
@@ -508,7 +521,7 @@ const satchelOpen = ref(window.innerWidth > 640)
   }
   /* On phones the gull sits in one row, just under where the Facilitator box goes (in either mode). */
   .gull-btn {
-    bottom: 124px;
+    bottom: calc(max(30px, env(safe-area-inset-bottom)) + var(--bottom-h, 64px) + 12px);
     flex-direction: row;
     align-items: center;
   }

@@ -109,7 +109,8 @@ const card = computed(() => {
 @media (max-width: 640px) {
   .fac {
     top: auto;
-    bottom: 184px;
+    /* Just above the gull, which sits just above the bottom buttons (see GameHud's --bottom-h). */
+    bottom: calc(max(30px, env(safe-area-inset-bottom)) + var(--bottom-h, 64px) + 70px);
   }
 }
 </style>
