@@ -21,6 +21,25 @@ function lift(i: number) {
 }
 
 const OPTIONS = LEAN_CHOICES
+
+/*
+ * Workshop mode: the room's show of hands decides. The choice with the most hands is pinned;
+ * a tie pins "Can't tell yet", because the room is genuinely split.
+ */
+const roomLead = computed<Lean | null>(() => {
+  const v = game.record.roomFirst
+  const counts = LEAN_CHOICES.map(c => ({ id: c.id, n: v[c.id] ?? 0 }))
+  const top = Math.max(...counts.map(c => c.n))
+  if (top <= 0) return null
+  const leaders = counts.filter(c => c.n === top)
+  return leaders.length === 1 ? leaders[0]!.id : 'unsure'
+})
+const roomTied = computed(() => {
+  const v = game.record.roomFirst
+  const top = Math.max(...LEAN_CHOICES.map(c => v[c.id] ?? 0))
+  return top > 0 && LEAN_CHOICES.filter(c => (v[c.id] ?? 0) === top).length > 1
+})
+const pinned = computed(() => (game.workshop ? roomLead.value : lean.value))
 </script>
 
 <template>
@@ -57,26 +76,30 @@ const OPTIONS = LEAN_CHOICES
         <p class="soft">
           No looking anything up yet. Your gut feeling is worth writing down, even if it changes later.
         </p>
-        <div class="choices" role="radiogroup" aria-label="First impression">
+        <RoomVote v-if="game.workshop" which="roomFirst" title="Room's first impressions (show of hands)" class="room-main" />
+        <p v-if="game.workshop" class="soft small room-note">
+          {{ !roomLead ? 'Count the hands for each choice. The room\'s top choice is pinned.' : roomTied ? 'It\'s a tie, so the room\'s first impression is pinned as "Can\'t tell yet".' : 'The room\'s top choice is pinned.' }}
+        </p>
+        <div class="choices" :class="{ room: game.workshop }" role="radiogroup" aria-label="First impression" :aria-disabled="game.workshop">
           <button
             v-for="o in OPTIONS"
             :key="o.id"
             role="radio"
-            :aria-checked="lean === o.id"
+            :aria-checked="pinned === o.id"
             class="choice"
-            :class="[o.id, { on: lean === o.id }]"
+            :class="[o.id, { on: pinned === o.id }]"
+            :disabled="game.workshop"
             @click="lean = o.id"
           >
             {{ o.text }}
           </button>
         </div>
-        <RoomVote v-if="game.workshop" which="roomFirst" title="Room's first impressions (show of hands)" />
       </div>
     </div>
     <template #footer>
       <span class="soft small">{{ pebbles.length }} / {{ MAX }} pebbles</span>
-      <button class="big-btn" :disabled="!lean" @click="lean && game.setFirstImpression(lean, pebbles)">
-        Pin my first impression
+      <button class="big-btn" :disabled="!pinned" @click="pinned && game.setFirstImpression(pinned, pebbles)">
+        {{ game.workshop ? 'Pin first impression' : 'Pin my first impression' }}
       </button>
     </template>
   </UiDialog>
@@ -157,6 +180,19 @@ h3 {
   text-align: left;
   padding: 0 16px;
   transition: transform var(--dur) var(--ease), background var(--dur), border-color var(--dur);
+}
+.room-main {
+  margin: 0 0 6px;
+}
+.room-note {
+  margin: 0 0 8px;
+}
+/* In workshop mode the room decides: the single choices only show what gets pinned. */
+.choices.room .choice:not(.on) {
+  opacity: 0.45;
+}
+.choices.room .choice {
+  cursor: default;
 }
 .choice:hover {
   transform: translateX(3px);

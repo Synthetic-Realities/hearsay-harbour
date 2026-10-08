@@ -109,7 +109,7 @@ const card = computed(() => {
 @media (max-width: 640px) {
   .fac {
     top: auto;
-    bottom: 160px;
+    bottom: 184px;
   }
 }
 </style>

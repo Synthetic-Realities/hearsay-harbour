@@ -50,7 +50,17 @@ const prompt = computed(() => {
   if (game.step !== 'investigate') return null
   const r = game.record
   if ((r.talked as string[]).includes(game.at) || (r.checked as string[]).includes(game.at)) return null
+  // Left with "Maybe later": point onwards instead (a small "Try again" button stays, see retry).
+  if (r.opened?.includes(game.at)) return null
   return `${p.verb} ${p.name}`
+})
+
+/** A place you opened and left with "Maybe later": offered again, quietly, beside Next. */
+const retry = computed(() => {
+  if (!game.at || game.at === 'board' || game.dialog || game.finished || game.step !== 'investigate') return null
+  const r = game.record
+  if (!r.opened?.includes(game.at) || (r.talked as string[]).includes(game.at) || (r.checked as string[]).includes(game.at)) return null
+  return `Try the ${PLACE_BY_ID[game.at].name} again`
 })
 
 /** With enough evidence you can always head back and reflect, even with places left to visit. */
@@ -165,6 +175,9 @@ const satchelOpen = ref(window.innerWidth > 640)
           </button>
           <button v-if="canReflectEarly" class="big-btn action quiet" @click="game.goto = 'board'">
             Reflect now
+          </button>
+          <button v-if="retry" class="big-btn action quiet" @click="game.use(game.at!)">
+            {{ retry }}
           </button>
         </div>
         <div v-else-if="game.finished && !game.dialog" class="end-btns">
@@ -386,12 +399,18 @@ const satchelOpen = ref(window.innerWidth > 640)
 .bottom {
   position: absolute;
   left: 50%;
-  bottom: max(20px, env(safe-area-inset-bottom));
+  bottom: max(30px, env(safe-area-inset-bottom));
   transform: translateX(-50%);
   display: flex;
   justify-content: center;
   width: max-content;
   max-width: calc(100vw - 24px);
+}
+/* The main prompts (talk, check, Next, Reflect now): large and centred so they're easy to spot. */
+.action {
+  min-height: 64px;
+  padding: 0 1.8em;
+  font-size: 1.25rem;
 }
 .end-btns {
   display: flex;
@@ -477,8 +496,24 @@ const satchelOpen = ref(window.innerWidth > 640)
   .top-left {
     top: 70px;
   }
+  /* Keep clear of the zoom buttons on the left and the gull on the right. */
+  .bottom {
+    max-width: calc(100vw - 144px);
+  }
+  .action {
+    min-height: 58px;
+    padding: 6px 1.2em;
+    font-size: 1.1rem;
+    text-align: center;
+  }
+  /* On phones the gull sits in one row, just under where the Facilitator box goes (in either mode). */
   .gull-btn {
-    bottom: 96px;
+    bottom: 124px;
+    flex-direction: row;
+    align-items: center;
+  }
+  .gull-btn .bubble {
+    border-radius: 14px 4px 14px 14px;
   }
   .steps li span:not(.sr-only) {
     display: none;

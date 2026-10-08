@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { sfx } from '~/audio/sfx'
-import { LEAN_WORDS, VILLAGERS, VILLAGER_IDS, type VillagerId } from '~/utils/content'
+import { LEAN_WORDS, VILLAGERS, VILLAGER_IDS, type VillagerId, pictureUrl } from '~/utils/content'
 import { useGame } from '~/stores/game'
 
 const props = defineProps<{ who: VillagerId }>()
@@ -36,7 +36,11 @@ const disagreeNames = computed(() => disagrees.value.map(id => VILLAGERS[id].nam
 <template>
   <UiDialog kicker="Step 2 · Discuss" :title="v.name" @close="game.close()">
     <div class="talk">
-      <VillagerFace class="face" :who="who" />
+      <!-- The picture being discussed sits beside the speaker, so it's clear what they're talking about. -->
+      <div class="side">
+        <VillagerFace class="face" :who="who" />
+        <img class="thumb" :src="pictureUrl(game.picture.src)" :alt="`The picture being discussed. Its caption says: ${game.picture.claim}`" draggable="false">
+      </div>
       <div class="said">
         <p class="who">
           {{ v.role }} · <span class="soft">{{ v.eye }}</span>
@@ -75,6 +79,18 @@ const disagreeNames = computed(() => disagrees.value.map(id => VILLAGERS[id].nam
   grid-template-columns: 110px 1fr;
   gap: 18px;
   align-items: start;
+}
+.side {
+  display: grid;
+  justify-items: center;
+  gap: 12px;
+}
+.thumb {
+  width: 100px;
+  border-radius: 10px;
+  border: 4px solid #fff;
+  box-shadow: var(--shadow);
+  transform: rotate(-3deg);
 }
 .face {
   width: 110px;
@@ -145,6 +161,18 @@ const disagreeNames = computed(() => disagrees.value.map(id => VILLAGERS[id].nam
   .talk {
     grid-template-columns: 1fr;
     justify-items: center;
+  }
+  .side {
+    grid-auto-flow: column;
+    align-items: center;
+    gap: 18px;
+  }
+  .face {
+    width: 90px;
+    height: 90px;
+  }
+  .thumb {
+    width: 84px;
   }
 }
 </style>
