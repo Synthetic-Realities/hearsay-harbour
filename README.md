@@ -99,6 +99,9 @@ https://synthetic-realities.github.io/hearsay-harbour/?arcade
 - **Back / Escape / Backspace / B (button 1):** close the window. A TV remote's Back button closes windows
   instead of leaving the game.
 - **Start (button 9):** press the main button at the bottom of the island.
+- **A TV remote's ⏩ and ⏪:** continue and go back, the same as the big side zones; ⏯ presses the
+  highlighted button. When a window isn't ready to continue yet but has more below (such as Reflect's second
+  question), the right-hand zone and ⏩ scroll down to it.
 - The **map** has a Go to button for every place, and hunch pebbles are dropped by aiming with the arrows.
 - **Big side zones:** every window has a large **‹ Back** zone on its left and a **› Continue** zone on its
   right (labelled with what it will do, such as "Next" or "Thanks, Wren"), filling the space beside it. A TV

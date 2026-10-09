@@ -7,6 +7,7 @@
  * - OK (Enter, a gamepad's A / button 0) presses the highlighted button.
  * - Back (Escape, Backspace, a gamepad's B / button 1, or a TV remote's Back) closes a window.
  * - Start (a gamepad's button 9) presses the main button at the bottom of the island.
+ * - A TV remote's ⏩ continues and ⏪ goes back (the big side zones), and ⏯ presses the highlight.
  * - Elements marked data-arcade-keys (the picture you drop hunch pebbles on) take the arrows
  *   themselves, and send an "arcade-leave" event when you push past their edge.
  *
@@ -141,8 +142,39 @@ export default defineNuxtPlugin(() => {
     return (el as HTMLElement).isContentEditable
   }
 
+  /*
+   * A TV remote's media buttons: ⏩ continues (the right-hand zone), ⏪ goes back (the left-hand
+   * zone) and ⏯ presses the highlighted button. Fire TV sends them as key codes 228, 227 and 179.
+   */
+  function media(ev: KeyboardEvent): 'forward' | 'rewind' | 'play' | null {
+    if (['MediaFastForward', 'MediaTrackNext'].includes(ev.key) || ev.keyCode === 228) return 'forward'
+    if (['MediaRewind', 'MediaTrackPrevious'].includes(ev.key) || ev.keyCode === 227) return 'rewind'
+    if (['MediaPlayPause', 'MediaPlay'].includes(ev.key) || ev.keyCode === 179) return 'play'
+    return null
+  }
+  function zone(side: 'left' | 'right') {
+    const root = scope()
+    return root === document.body ? null : root.querySelector<HTMLButtonElement>(`.zone.${side}:not(:disabled)`)
+  }
+
   window.addEventListener('keydown', (ev) => {
     if (!game.arcade || ev.metaKey || ev.ctrlKey || ev.altKey) return
+    const m = media(ev)
+    if (m) {
+      ev.preventDefault()
+      ev.stopPropagation()
+      if (ev.repeat) return
+      const active = document.activeElement as HTMLElement | null
+      if (m === 'forward') {
+        const z = zone('right')
+        if (z) z.click()
+        else if (scope() === document.body) mainAction()
+      }
+      else if (m === 'rewind') zone('left')?.click()
+      else if (active && active !== document.body) active.click()
+      else mainAction()
+      return
+    }
     const active = document.activeElement
     const dir = ARROWS[ev.key]
     if (dir) {

@@ -23,9 +23,9 @@ keywords:
 license: MIT
 repository-code: "https://github.com/Synthetic-Realities/hearsay-harbour"
 url: "https://synthetic-realities.github.io/hearsay-harbour/"
-version: "1.3.0"
+version: "1.4.0"
 doi: "10.5281/zenodo.23243671"
-date-released: "2026-10-08"
+date-released: "2026-10-09"
 references:
   - type: software
     title: Hivebound

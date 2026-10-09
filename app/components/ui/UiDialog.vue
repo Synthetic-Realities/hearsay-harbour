@@ -31,7 +31,23 @@ onMounted(() => {
   }
 })
 onBeforeUnmount(() => mo?.disconnect())
+// Not ready to continue yet, but more to see below (Reflect's second question): the right zone scrolls.
+const moreBelow = ref(false)
+function readScroll() {
+  const b = body.value
+  moreBelow.value = !!b && b.scrollTop + b.clientHeight < b.scrollHeight - 8
+}
+onMounted(() => {
+  body.value?.addEventListener('scroll', readScroll, { passive: true })
+  readScroll()
+  setTimeout(readScroll, 400)
+})
+const scrollMode = computed(() => !!cont.value?.disabled && moreBelow.value)
 function onContinue() {
+  if (scrollMode.value) {
+    body.value?.scrollBy({ top: body.value.clientHeight * 0.7, behavior: 'smooth' })
+    return
+  }
   footer.value?.querySelector<HTMLButtonElement>('[data-continue]:not(:disabled)')?.click()
 }
 
@@ -81,8 +97,9 @@ function onCancel(ev: Event) {
     </div>
     <SideZones
       :back-label="cont ? 'Back' : 'Close'"
-      :continue-label="cont?.label"
-      :continue-disabled="cont?.disabled"
+      :continue-label="scrollMode ? 'More below' : cont?.label"
+      :continue-disabled="cont?.disabled && !scrollMode"
+      :continue-icon="scrollMode ? '↓' : undefined"
       @back="emit('close')"
       @continue="onContinue"
     />

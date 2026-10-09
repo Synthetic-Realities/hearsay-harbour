@@ -9,6 +9,7 @@ const props = defineProps<{
   backLabel: string
   continueLabel?: string | null
   continueDisabled?: boolean
+  continueIcon?: string
 }>()
 const emit = defineEmits<{ back: [], continue: [] }>()
 
@@ -51,7 +52,7 @@ onBeforeUnmount(() => window.removeEventListener('resize', measure))
     @mousedown.prevent
     @click.stop="emit('continue')"
   >
-    <span class="chev">›</span>
+    <span class="chev" :class="{ small: props.continueIcon }">{{ props.continueIcon ?? '›' }}</span>
     <span class="label">{{ props.continueLabel }}</span>
   </button>
 </template>
@@ -100,6 +101,9 @@ onBeforeUnmount(() => window.removeEventListener('resize', measure))
   font-size: 2.6rem;
   line-height: 1;
   box-shadow: var(--shadow);
+}
+.chev.small {
+  font-size: 2rem;
 }
 .right .chev {
   background: var(--honey);
