@@ -11,7 +11,7 @@
  *   themselves, and send an "arcade-leave" event when you push past their edge.
  *
  * Switch it on from the title screen, by adding ?arcade to the address (for a cabinet), or just
- * by plugging in a gamepad.
+ * by plugging in a gamepad. TV browsers start with it on.
  */
 import { useGame } from '~/stores/game'
 
@@ -22,6 +22,13 @@ const FOCUSABLE = 'button, a[href], input, select, textarea, summary, [tabindex]
 export default defineNuxtPlugin(() => {
   const game = useGame()
   if (/[?&#]arcade\b/.test(location.href)) game.setArcade(true)
+  // TV browsers (Fire TV's Silk on AFT… devices, Samsung, LG, Android TV…) start in this mode, unless it was switched off here.
+  let chosen = false
+  try {
+    chosen = localStorage.getItem('hearsay-harbour:arcade') !== null
+  }
+  catch {}
+  if (!chosen && /AFT[A-Z]|SMART-TV|SmartTV|Tizen|Web0S|webOS|NetCast|BRAVIA|Android TV|GoogleTV|CrKey|HbbTV|Roku|AppleTV|PhilipsTV|VIDAA/i.test(navigator.userAgent)) game.setArcade(true)
   watch(() => game.arcade, on => document.documentElement.classList.toggle('arcade', on), { immediate: true })
 
   /** Where the highlight can go: the open window, or the screen behind when none is open. */

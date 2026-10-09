@@ -111,7 +111,7 @@ onMounted(() => {
       <button class="big-btn quiet" @click="game.start(game.workshop)">
         Play the day again
       </button>
-      <button autofocus class="big-btn" @click="game.open({ kind: 'recap' })">
+      <button autofocus class="big-btn" data-continue @click="game.open({ kind: 'recap' })">
         See all your findings <UiIcon name="arrow" class="arr" />
       </button>
     </template>

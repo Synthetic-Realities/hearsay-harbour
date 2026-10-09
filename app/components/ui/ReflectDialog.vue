@@ -113,7 +113,7 @@ const captions = computed(() => {
       </div>
     </div>
     <template #footer>
-      <button class="big-btn" :disabled="!pinned || !caption" @click="pinned && caption && game.pin(pinned, caption)">
+      <button class="big-btn" data-continue :disabled="!pinned || !caption" @click="pinned && caption && game.pin(pinned, caption)">
         {{ game.workshop ? 'Pin the room\'s answer' : 'Pin it to the board' }}
       </button>
     </template>

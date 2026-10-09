@@ -30,7 +30,7 @@ function travel(id: PlaceId) {
       <button class="big-btn quiet" @click="game.open({ kind: 'guide', page: 0 })">
         Open the welcome guide
       </button>
-      <button autofocus class="big-btn" @click="game.close()">
+      <button autofocus class="big-btn" data-continue @click="game.close()">
         Back to the island
       </button>
     </template>

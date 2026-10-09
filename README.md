@@ -100,6 +100,10 @@ https://synthetic-realities.github.io/hearsay-harbour/?arcade
   instead of leaving the game.
 - **Start (button 9):** press the main button at the bottom of the island.
 - The **map** has a Go to button for every place, and hunch pebbles are dropped by aiming with the arrows.
+- **Big side zones:** every window has a large **‹ Back** zone on its left and a **› Continue** zone on its
+  right (labelled with what it will do, such as "Next" or "Thanks, Wren"), filling the space beside it. A TV
+  browser's on-screen pointer only has to land somewhere on that side. TV browsers (Fire TV's Silk, Samsung,
+  LG, Android TV and others) start in this mode automatically.
 
 Most cabinets send their joystick and buttons as arrow keys and keyboard keys, or as a standard gamepad;
 both work. Buttons can be remapped in `app/plugins/arcade.client.ts` once a cabinet's layout is known.

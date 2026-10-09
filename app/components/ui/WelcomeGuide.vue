@@ -61,7 +61,7 @@ function onCancel(ev: Event) {
 </script>
 
 <template>
-  <dialog ref="el" class="guide" :aria-labelledby="titleId" @cancel="onCancel" @keydown="onKey">
+  <dialog ref="el" class="guide" :class="{ tv: game.arcade }" :aria-labelledby="titleId" @cancel="onCancel" @keydown="onKey">
     <div class="frame">
     <div ref="sheetEl" class="sheet">
       <div class="art">
@@ -182,6 +182,12 @@ function onCancel(ev: Event) {
     </div>
     <ScrollRail :target="railTarget" />
     </div>
+    <SideZones
+      :back-label="page > 0 ? 'Back' : (midGame ? 'Close' : 'Skip')"
+      :continue-label="last ? (midGame ? 'Back to the island' : 'Start the day') : 'Next'"
+      @back="page > 0 ? go(page - 1) : finish()"
+      @continue="last ? finish() : go(page + 1)"
+    />
   </dialog>
 </template>
 
@@ -195,6 +201,10 @@ function onCancel(ev: Event) {
   max-height: calc(100dvh - 24px);
   color: var(--ink);
   overflow: visible;
+}
+/* TV and arcade mode: leave room either side for the big back and next zones. */
+.guide.tv {
+  width: min(1040px, calc(100vw - 200px));
 }
 .guide[open] {
   animation: pop 320ms var(--ease);

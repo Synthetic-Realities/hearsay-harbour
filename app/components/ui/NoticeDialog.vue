@@ -144,7 +144,7 @@ const pinned = computed(() => (game.workshop ? roomLead.value : lean.value))
     </div>
     <template #footer>
       <span class="soft small">{{ pebbles.length }} / {{ MAX }} pebbles</span>
-      <button class="big-btn" :disabled="!pinned" @click="pinned && game.setFirstImpression(pinned, pebbles)">
+      <button class="big-btn" data-continue :disabled="!pinned" @click="pinned && game.setFirstImpression(pinned, pebbles)">
         {{ game.workshop ? 'Pin first impression' : 'Pin my first impression' }}
       </button>
     </template>

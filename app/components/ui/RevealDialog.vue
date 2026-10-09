@@ -124,7 +124,7 @@ onMounted(() => {
       </div>
     </div>
     <template #footer>
-      <button autofocus class="big-btn" @click="game.next()">
+      <button autofocus class="big-btn" data-continue @click="game.next()">
         {{ last ? 'See how the day went' : 'Next picture' }}
         <UiIcon name="arrow" class="arrow" />
       </button>

@@ -74,7 +74,7 @@ async function copy() {
       </div>
     </div>
     <template #footer>
-      <button autofocus class="big-btn" @click="game.close()">
+      <button autofocus class="big-btn" data-continue @click="game.close()">
         Done
       </button>
     </template>

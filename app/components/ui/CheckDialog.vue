@@ -52,7 +52,7 @@ const STRENGTH = {
       </div>
     </div>
     <template #footer>
-      <button class="big-btn" :class="{ quiet: !done }" @click="game.close()">
+      <button class="big-btn" data-continue :class="{ quiet: !done }" @click="game.close()">
         {{ done ? 'Into the satchel' : 'Maybe later' }}
       </button>
     </template>
