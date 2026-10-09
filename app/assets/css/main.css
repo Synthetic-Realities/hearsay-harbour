@@ -76,6 +76,16 @@ button {
   border-radius: 14px;
 }
 
+html.arcade .kbd {
+  display: none;
+}
+/* Arcade and TV remote mode: a bold highlight that's easy to follow from across a room. */
+html.arcade :focus {
+  outline: 5px solid var(--honey-deep);
+  outline-offset: 3px;
+  box-shadow: 0 0 0 3px var(--paper), 0 0 22px 6px rgba(255, 182, 39, 0.75) !important;
+}
+
 .sr-only {
   position: absolute !important;
   width: 1px;

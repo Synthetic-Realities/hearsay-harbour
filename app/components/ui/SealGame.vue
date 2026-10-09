@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { sfx } from '~/audio/sfx'
+import { useGame } from '~/stores/game'
 
 /*
  * Wax seal: hold to warm the wax over the candle, standing in for checking content
@@ -7,6 +8,7 @@ import { sfx } from '~/audio/sfx'
  * stamp shows whether a seal is there.
  */
 const emit = defineEmits<{ done: [] }>()
+const game = useGame()
 const heat = ref(0)
 const holding = ref(false)
 const stamped = ref(false)
@@ -14,10 +16,12 @@ let raf = 0
 let last = performance.now()
 
 function frame(now: number) {
-  const dt = Math.min(0.05, (now - last) / 1000)
+  // Time-based, so a slow TV browser warms the wax as fast as a laptop.
+  const dt = Math.max(0, Math.min(0.25, (now - last) / 1000))
   last = now
   if (!stamped.value) {
-    heat.value = Math.max(0, Math.min(1, heat.value + (holding.value ? dt * 0.65 : -dt * 0.25)))
+    // A press can fill it in one go, so check before it cools.
+    if (heat.value < 1) heat.value = Math.max(0, Math.min(1, heat.value + (holding.value ? dt * 0.65 : -dt * 0.25)))
     if (heat.value >= 1) {
       stamped.value = true
       holding.value = false
@@ -40,7 +44,11 @@ function stop() {
 function onKey(ev: KeyboardEvent) {
   if (ev.key === ' ' || ev.key === 'Enter') {
     ev.preventDefault()
-    if (ev.type === 'keydown') holding.value = true
+    if (ev.type === 'keydown') {
+      holding.value = true
+      // Each press warms it too: some TV remotes can't hold a button down.
+      if (!ev.repeat && !stamped.value) heat.value = Math.min(1, heat.value + 0.25)
+    }
     else holding.value = false
   }
 }
@@ -76,7 +84,7 @@ function onKey(ev: KeyboardEvent) {
       @keyup="onKey"
       @contextmenu.prevent
     >
-      {{ stamped ? 'Stamped!' : holding ? 'Warming…' : 'Hold to warm the wax' }}
+      {{ stamped ? 'Stamped!' : holding ? 'Warming…' : game.arcade ? 'Hold or keep pressing OK to warm the wax' : 'Hold to warm the wax' }}
     </button>
   </div>
 </template>

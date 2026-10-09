@@ -20,6 +20,36 @@ function lift(i: number) {
   pebbles.value.splice(i, 1)
 }
 
+/*
+ * Arcade and TV remote mode: with the picture highlighted, the arrows move a cross-hair and OK
+ * drops a pebble there. Pushing past the edge moves on to the next button.
+ */
+const aim = ref({ x: 0.5, y: 0.5 })
+const aiming = ref(false)
+const STEP = 0.06
+function onAimKey(ev: KeyboardEvent) {
+  if (!game.arcade) return
+  const moves: Record<string, [number, number, string]> = { ArrowUp: [0, -STEP, 'up'], ArrowDown: [0, STEP, 'down'], ArrowLeft: [-STEP, 0, 'left'], ArrowRight: [STEP, 0, 'right'] }
+  const m = moves[ev.key]
+  if (m) {
+    ev.preventDefault()
+    ev.stopPropagation()
+    const x = aim.value.x + m[0]
+    const y = aim.value.y + m[1]
+    if (x < 0.02 || x > 0.98 || y < 0.02 || y > 0.98) {
+      window.dispatchEvent(new CustomEvent('arcade-leave', { detail: m[2] }))
+      return
+    }
+    aim.value = { x, y }
+  }
+  else if (ev.key === 'Enter' || ev.key === ' ') {
+    ev.preventDefault()
+    if (pebbles.value.length >= MAX) pebbles.value.shift()
+    pebbles.value.push({ ...aim.value })
+    sfx.pebble()
+  }
+}
+
 const OPTIONS = LEAN_CHOICES
 
 /*
@@ -47,7 +77,18 @@ const pinned = computed(() => (game.workshop ? roomLead.value : lean.value))
     <div class="layout">
       <div class="pic-col">
         <div class="picture-frame">
-          <div class="drop" role="presentation" @click="drop">
+          <div
+            class="drop"
+            :role="game.arcade ? 'button' : 'presentation'"
+            :tabindex="game.arcade ? 0 : undefined"
+            :data-arcade-keys="game.arcade ? '' : undefined"
+            :aria-label="game.arcade ? 'The picture. Use the arrows to aim and OK to drop a hunch pebble.' : undefined"
+            @click="drop"
+            @keydown="onAimKey"
+            @focus="aiming = true"
+            @blur="aiming = false"
+          >
+            <span v-if="game.arcade && aiming" class="aim" :style="{ left: `${aim.x * 100}%`, top: `${aim.y * 100}%` }" aria-hidden="true" />
             <img :src="pictureUrl(pic.src)" :alt="`The picture that arrived. Its caption says: ${pic.claim}`" draggable="false">
             <button
               v-for="(p, i) in pebbles"
@@ -62,7 +103,12 @@ const pinned = computed(() => (game.workshop ? roomLead.value : lean.value))
           </div>
         </div>
         <p class="tip">
-          Tap the picture to drop up to {{ MAX }} <strong>hunch pebbles</strong> on whatever catches your eye. Tap a pebble to lift it.
+          <template v-if="game.arcade">
+            Highlight the picture, aim with the arrows and press OK to drop up to {{ MAX }} <strong>hunch pebbles</strong> on whatever catches your eye.
+          </template>
+          <template v-else>
+            Tap the picture to drop up to {{ MAX }} <strong>hunch pebbles</strong> on whatever catches your eye. Tap a pebble to lift it.
+          </template>
         </p>
       </div>
       <div class="side">
@@ -122,6 +168,34 @@ const pinned = computed(() => (game.workshop ? roomLead.value : lean.value))
   max-height: min(56vh, 520px);
   margin: 0 auto;
   user-select: none;
+}
+.aim {
+  position: absolute;
+  z-index: 2;
+  width: 44px;
+  height: 44px;
+  transform: translate(-50%, -50%);
+  border: 4px solid #fff;
+  border-radius: 50%;
+  box-shadow: 0 0 0 3px var(--honey-deep), 0 2px 8px rgba(0, 0, 0, 0.4);
+  pointer-events: none;
+}
+.aim::before,
+.aim::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  background: #fff;
+  transform: translate(-50%, -50%);
+}
+.aim::before {
+  width: 4px;
+  height: 64px;
+}
+.aim::after {
+  width: 64px;
+  height: 4px;
 }
 .pebble {
   position: absolute;

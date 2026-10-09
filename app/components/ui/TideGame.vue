@@ -20,7 +20,7 @@ let last = performance.now()
 const speed = () => 0.9 + caught.value * 0.25
 
 function frame(now: number) {
-  const dt = Math.min(0.05, (now - last) / 1000)
+  const dt = Math.max(0, Math.min(0.05, (now - last) / 1000))
   last = now
   t += dt * speed()
   pos.value = 0.5 + Math.sin(t) * 0.44

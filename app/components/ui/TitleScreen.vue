@@ -68,10 +68,16 @@ function resume() {
           <button class="link" @click="game.open({ kind: 'credits' })">
             Credits
           </button>
+          <button class="link" :aria-pressed="game.arcade" @click="game.setArcade(!game.arcade)">
+            Arcade / TV remote mode: {{ game.arcade ? 'on' : 'off' }}
+          </button>
           <button v-if="dev" class="studio" @click="game.open({ kind: 'studio' })">
             Dev Studio: add pictures
           </button>
         </div>
+        <p v-if="game.arcade" class="small">
+          Arrows or joystick: move the highlight. OK or A: choose. Back or B: close a window.
+        </p>
       </div>
       <ScrollRail :target="card" />
     </div>

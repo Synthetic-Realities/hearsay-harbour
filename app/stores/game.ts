@@ -70,6 +70,7 @@ const blankRecord = (p: Picture): PictureRecord => ({
 })
 
 const SAVE_KEY = 'hearsay-harbour:v1'
+const ARCADE_KEY = 'hearsay-harbour:arcade'
 
 export function scoreRecord(rec: PictureRecord, pic: Picture) {
   const evidence = rec.talked.length + rec.checked.length
@@ -104,6 +105,15 @@ export const useGame = defineStore('game', {
     muted: false,
     /** The keeper's name, or the group's in workshop mode: on the certificate, the recap and the saved findings. */
     keeperName: '',
+    /** Arcade and TV remote mode (see plugins/arcade.client.ts). Remembered on this device. */
+    arcade: (() => {
+      try {
+        return localStorage.getItem(ARCADE_KEY) === 'on'
+      }
+      catch {
+        return false
+      }
+    })(),
     /** Camera zoom: below 1 is closer, above 1 shows more of the island. */
     zoom: 1,
     /** Bumped to ask the camera to recentre on the puffin. */
@@ -324,6 +334,13 @@ export const useGame = defineStore('game', {
       this.step = 'arriving'
       this.dialog = null
       this.keeperName = ''
+    },
+    setArcade(on: boolean) {
+      this.arcade = on
+      try {
+        localStorage.setItem(ARCADE_KEY, on ? 'on' : 'off')
+      }
+      catch {}
     },
     /** Remember the name typed on the certificate or the recap, so it survives closing and reopening them. */
     setKeeperName(name: string) {

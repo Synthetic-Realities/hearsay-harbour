@@ -1,12 +1,25 @@
 <script setup lang="ts">
+import { PLACES, type PlaceId } from '~/utils/world'
 import { useGame } from '~/stores/game'
 
 const game = useGame()
+// Walk straight to any place: handy with a TV remote or arcade stick, where tapping the island isn't possible.
+const canTravel = computed(() => game.started && (game.step === 'investigate' || game.step === 'notice'))
+function travel(id: PlaceId) {
+  game.close()
+  game.goto = id
+}
 </script>
 
 <template>
   <UiDialog kicker="Hearsay Harbour" title="Island map" @close="game.close()">
     <IslandMap :you="game.pos" />
+    <nav v-if="canTravel" class="travel" aria-label="Go to a place">
+      <span class="soft">Go to:</span>
+      <button v-for="p in PLACES" :key="p.id" type="button" class="go" @click="travel(p.id)">
+        {{ p.label }}
+      </button>
+    </nav>
     <ul class="legend">
       <li><span class="sw you" /> You</li>
       <li><span class="sw home" /> Noticeboard: start and finish each picture here</li>
@@ -25,6 +38,26 @@ const game = useGame()
 </template>
 
 <style scoped>
+.travel {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin: 12px 0 0;
+}
+.soft {
+  color: var(--ink-soft);
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+.go {
+  padding: 6px 12px;
+  border-radius: 999px;
+  border: 2px solid var(--line);
+  background: #fff;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
 .legend {
   display: flex;
   flex-wrap: wrap;

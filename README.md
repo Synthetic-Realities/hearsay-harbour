@@ -85,6 +85,25 @@ on Android) installs it like an app: it opens full screen and keeps working offl
 On a smart TV, a projector or anything without easy scrolling, every window that has more to show gets a
 green scroll bar with ▲ ▼ buttons, which can be reached with a TV remote's arrow keys or Tab.
 
+### Arcade and TV remote mode
+
+For an arcade cabinet, a games controller or a smart TV remote, choose **Arcade / TV remote mode** on the
+title screen. It also switches on by itself when a gamepad is connected, or when the address ends in
+`?arcade` (handy for a cabinet that always opens the game the same way):
+https://synthetic-realities.github.io/hearsay-harbour/?arcade
+
+- **Arrows, joystick or D-pad:** move a bright highlight to the nearest button in that direction; at the top
+  or bottom of a long window they scroll it.
+- **OK / Enter / A (button 0):** press the highlighted button. The wax seal warms while OK is held, or with a
+  few presses for remotes that can't hold a button.
+- **Back / Escape / Backspace / B (button 1):** close the window. A TV remote's Back button closes windows
+  instead of leaving the game.
+- **Start (button 9):** press the main button at the bottom of the island.
+- The **map** has a Go to button for every place, and hunch pebbles are dropped by aiming with the arrows.
+
+Most cabinets send their joystick and buttons as arrow keys and keyboard keys, or as a standard gamepad;
+both work. Buttons can be remapped in `app/plugins/arcade.client.ts` once a cabinet's layout is known.
+
 ## Running it locally
 
 **On a Mac, double-click `Start Hearsay Harbour.command`.** It installs what it needs the first time,
