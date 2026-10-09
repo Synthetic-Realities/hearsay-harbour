@@ -3,8 +3,11 @@ import { setMuted, unlockAudio } from '~/audio/sfx'
 import { CHECKS, LEAN_WORDS, VILLAGERS } from '~/utils/content'
 import { PLACE_BY_ID, type PlaceId } from '~/utils/world'
 import { useGame } from '~/stores/game'
+import { isTvBrowser } from '~/utils/device'
 
 const game = useGame()
+// Smart TVs call workshop mode "Play together".
+const tv = isTvBrowser()
 
 const steps = computed(() => {
   const r = game.record
@@ -119,7 +122,7 @@ onBeforeUnmount(() => bottomRo?.disconnect())
       <div class="panel progress">
         <p class="where">
           <strong>Picture {{ Math.min(game.index + 1, game.pictures.length) }} of {{ game.pictures.length }}</strong>
-          <span v-if="game.workshop" class="ws">Workshop</span>
+          <span v-if="game.workshop" class="ws">{{ tv ? 'Together' : 'Workshop' }}</span>
           <span v-if="game.preview" class="ws">Preview · not saved</span>
         </p>
         <ol class="steps" aria-label="Steps for this picture">

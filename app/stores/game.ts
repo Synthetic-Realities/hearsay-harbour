@@ -2,7 +2,6 @@ import { defineStore } from 'pinia'
 import { type CheckId, type Label, type Lean, PACKS, type Pack, type Picture, type VillagerId, isVillager, packById } from '~/utils/content'
 import { PLACE_BY_ID, type PlaceId } from '~/utils/world'
 import { hexToWorld } from '~/utils/hex'
-import { isTvBrowser } from '~/utils/device'
 
 export type Caption = 'careful' | 'over' | 'shrug'
 
@@ -187,8 +186,6 @@ export const useGame = defineStore('game', {
       this.dialog = null
     },
     start(workshop = false, packId?: string) {
-      // Workshop mode isn't offered on smart TVs (see utils/device.ts).
-      if (isTvBrowser()) workshop = false
       this.preview = null
       this.packId = packById(packId ?? this.packId).id
       this.restart()
@@ -250,7 +247,7 @@ export const useGame = defineStore('game', {
         this.step = d.step
         this.records = d.records.map((r: PictureRecord, i: number) => ({ ...blankRecord(pack.pictures[i]!), ...r }))
         this.trust = d.trust
-        this.workshop = !!d.workshop && !isTvBrowser()
+        this.workshop = !!d.workshop
         this.muted = !!d.muted
         this.keeperName = typeof d.keeperName === 'string' ? d.keeperName : ''
         return true

@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { sfx } from '~/audio/sfx'
 import { useGame } from '~/stores/game'
+import { isTvBrowser } from '~/utils/device'
 
 /*
  * The end-of-day reward: a medal, a keeper's rank and three stars, one for each habit the
@@ -8,6 +9,8 @@ import { useGame } from '~/stores/game'
  * little festival on the island behind it.
  */
 const game = useGame()
+// Smart TVs call workshop mode "Play together".
+const tv = isTvBrowser()
 const pics = computed(() => game.pictures)
 const recs = computed(() => game.records)
 
@@ -81,7 +84,7 @@ onMounted(() => {
             <path d="M0-9l2.6 5.6 6.1.7-4.5 4.1 1.2 6L0 4.4-5.4 7.4l1.2-6-4.5-4.1 6.1-.7z" :fill="s.earned ? '#ffb627' : '#e8e2d6'" stroke="#fff" stroke-width="1.5" />
           </g>
         </svg>
-        <label class="name" for="reward-name">{{ game.workshop ? 'Group or class name' : 'Keeper\'s name' }}</label>
+        <label class="name" for="reward-name">{{ game.workshop ? (tv ? 'Family or group name' : 'Group or class name') : 'Keeper\'s name' }}</label>
         <input id="reward-name" v-model="name" type="text" maxlength="40" :placeholder="game.workshop ? 'Type your group\'s name' : 'Type your name'">
       </div>
       <div class="words">

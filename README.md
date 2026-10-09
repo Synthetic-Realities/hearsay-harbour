@@ -107,8 +107,13 @@ https://synthetic-realities.github.io/hearsay-harbour/?arcade
   right (labelled with what it will do, such as "Next" or "Thanks, Wren"), filling the space beside it. A TV
   browser's on-screen pointer only has to land somewhere on that side. TV browsers (Fire TV's Silk, Samsung,
   LG, Android TV and others) start in this mode automatically.
-- **Workshop mode isn't offered on smart TVs**, because its room-vote counters are too fiddly with a remote.
-  To run a workshop on a big screen, open the game on a computer or tablet connected to the TV or projector.
+- **Play together:** on a smart TV, workshop mode is called **Play together**, for a family or group round
+  the TV. The facilitator panel becomes short **Talk about it** questions, and the HUD says "Together".
+- **Tap-to-count votes:** on a smart TV, or anywhere in arcade mode, the room's show of hands uses big tiles
+  instead of the small − + counters. Each OK press (or tap) on a tile adds one hand, the running total
+  shows underneath, and a big **Undo** takes back the last hand (for as long as the page stays open).
+  The votes, the pinned top choice (a tie pins unsure), the reveal, the recap and the CSV are the same as in
+  workshop mode on a computer.
 
 Most cabinets send their joystick and buttons as arrow keys and keyboard keys, or as a standard gamepad;
 both work. Buttons can be remapped in `app/plugins/arcade.client.ts` once a cabinet's layout is known.

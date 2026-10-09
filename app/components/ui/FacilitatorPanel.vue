@@ -1,11 +1,35 @@
 <script setup lang="ts">
 import { useGame } from '~/stores/game'
+import { isTvBrowser } from '~/utils/device'
 
-/* Workshop mode: prompts for the facilitator, following the SDA Vision workshop activities. */
+/*
+ * Workshop mode: prompts for the facilitator, following the SDA Vision workshop activities.
+ * On a smart TV ("Play together") they're short "Talk about it" questions for a family.
+ */
 const game = useGame()
+const tv = isTvBrowser()
 const open = ref(window.innerWidth > 900)
 
-const card = computed(() => {
+const card = computed(() => (tv ? familyCard() : facilitatorCard()))
+
+function familyCard() {
+  const r = game.record
+  if (game.finished) {
+    return { step: 'All done', prompt: 'Which picture surprised you most?', tip: 'The recap shows how everyone voted.' }
+  }
+  if (game.step === 'arriving' || game.step === 'notice') {
+    return { step: 'Notice', prompt: 'What do you spot first? Camera, AI or can\'t tell?', tip: 'No looking anything up yet. Hands up for each choice.' }
+  }
+  if (game.step === 'done') {
+    return { step: 'Reflect', prompt: 'Did anyone change their mind? What changed it?', tip: 'Changing your mind is a good thing.' }
+  }
+  if (!r.checked.length) {
+    return { step: 'Discuss', prompt: 'Who should we ask about this picture, and why?', tip: 'Take turns choosing who to visit.' }
+  }
+  return { step: 'Check', prompt: 'What did we find out? Does it change your guess?', tip: 'Finding nothing is still a clue.' }
+}
+
+function facilitatorCard() {
   const r = game.record
   if (game.finished) {
     return { step: 'Wrap up', prompt: 'Which picture changed the room\'s mind the most, and what changed it?', tip: 'The recap compares the room\'s first and final votes. You can save it as an image or PDF for your notes.' }
@@ -20,14 +44,14 @@ const card = computed(() => {
     return { step: 'Activity 2 · Discuss', prompt: 'Which names, dates or references could help you trace where this came from?', tip: 'Let the room pick which villager to ask. Disagreement is useful: ask people to say why.' }
   }
   return { step: 'Activity 3 · Check', prompt: 'What did the check find, and how strongly does it point one way?', tip: 'Remember a check that finds nothing is still a finding. When ready, take a final show of hands at the board.' }
-})
+}
 </script>
 
 <template>
-  <aside class="fac panel" :class="{ closed: !open }" aria-label="Facilitator prompts">
+  <aside class="fac panel" :class="{ closed: !open, tv }" :aria-label="tv ? 'Talk about it' : 'Facilitator prompts'">
     <button class="head" :aria-expanded="open" @click="open = !open">
       <UiIcon name="people" />
-      <span>Facilitator</span>
+      <span>{{ tv ? 'Talk about it' : 'Facilitator' }}</span>
     </button>
     <div v-if="open" class="body">
       <p class="step">
@@ -105,6 +129,13 @@ const card = computed(() => {
   font-size: 0.85rem;
   color: var(--ink-soft);
   line-height: 1.4;
+}
+/* On a TV the question is read from the sofa. */
+.tv .prompt {
+  font-size: 1.4rem;
+}
+.tv .tip {
+  font-size: 0.95rem;
 }
 @media (max-width: 640px) {
   .fac {

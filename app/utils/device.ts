@@ -1,7 +1,7 @@
 /**
  * Is this a smart TV's browser (Fire TV's Silk on AFT… devices, Samsung, LG, Android TV and others)?
- * TVs start in arcade / TV remote mode, and don't offer workshop mode, whose room-vote counters
- * are too fiddly with a remote.
+ * TVs start in arcade / TV remote mode, call workshop mode "Play together" (with family-sized
+ * prompts), and count the room's hands with big tiles instead of small − + counters.
  */
 export function isTvBrowser() {
   return typeof navigator !== 'undefined'

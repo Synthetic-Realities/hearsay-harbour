@@ -3,6 +3,7 @@ import { sfx } from '~/audio/sfx'
 import { CHECKS, VILLAGERS } from '~/utils/content'
 import type { PlaceId } from '~/utils/world'
 import { useGame } from '~/stores/game'
+import { isTvBrowser } from '~/utils/device'
 
 /*
  * The welcome guide: a big, friendly tour before the day starts, reopenable any time
@@ -10,6 +11,8 @@ import { useGame } from '~/stores/game'
  */
 const props = defineProps<{ page?: number }>()
 const game = useGame()
+// Smart TVs call workshop mode "Play together".
+const tv = isTvBrowser()
 const el = ref<HTMLDialogElement>()
 const titleId = useId()
 
@@ -148,7 +151,12 @@ function onCancel(ev: Event) {
             <li>Lost? The <strong>map</strong> and <strong>guide</strong> buttons at the top bring this back.</li>
           </ul>
           <p v-if="game.workshop" class="hand callout">
-            Workshop mode is on: you'll be asked for the room's show of hands, and facilitator prompts appear on the right.
+            <template v-if="tv">
+              Playing together: everyone votes with a show of hands, and "Talk about it" questions appear on the right.
+            </template>
+            <template v-else>
+              Workshop mode is on: you'll be asked for the room's show of hands, and facilitator prompts appear on the right.
+            </template>
           </p>
         </div>
 
