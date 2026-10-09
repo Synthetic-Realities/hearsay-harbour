@@ -34,10 +34,10 @@ const topChoice = (v: Partial<Record<string, number>>, first: boolean) => {
 const checkNames = (ids: CheckId[]) => ids.map(c => CHECKS[c].name).join(', ')
 /** Every recorded finding as CSV, for workshop notes or research. */
 function findingsCsv() {
-  const head = ['pack', 'picture', 'caption_it_arrived_with', 'first_impression', 'hunch_pebbles', 'villagers_asked', 'checks_used', 'shared_early', 'pinned_label', 'share_caption', 'truth', 'trust_change', 'room_first_votes', 'room_final_votes']
+  const head = [game.workshop ? 'group_name' : 'keeper_name', 'pack', 'picture', 'caption_it_arrived_with', 'first_impression', 'hunch_pebbles', 'villagers_asked', 'checks_used', 'shared_early', 'pinned_label', 'share_caption', 'truth', 'trust_change', 'room_first_votes', 'room_final_votes']
   const rows = game.records.map((r, i) => {
     const p = game.pictures[i]!
-    return [game.pack.id, p.id, p.claim, r.firstLean ?? '', r.pebbles.length, r.talked.join(' '), r.checked.join(' '), r.sharedEarly, r.label ?? '', r.caption ?? '', p.truth, r.trustDelta, voteList(r.roomFirst, true).map(c => `${c.name} ${c.n}`).join('; '), voteList(r.roomFinal, false).map(c => `${c.name} ${c.n}`).join('; ')]
+    return [game.keeperName, game.pack.id, p.id, p.claim, r.firstLean ?? '', r.pebbles.length, r.talked.join(' '), r.checked.join(' '), r.sharedEarly, r.label ?? '', r.caption ?? '', p.truth, r.trustDelta, voteList(r.roomFirst, true).map(c => `${c.name} ${c.n}`).join('; '), voteList(r.roomFinal, false).map(c => `${c.name} ${c.n}`).join('; ')]
   })
   const cell = (v: unknown) => `"${String(v).replaceAll('"', '""')}"`
   return [head, ...rows].map(r => r.map(cell).join(',')).join('\n')
@@ -47,7 +47,10 @@ const sheet = ref<HTMLElement>()
 const saving = ref(false)
 const preview = ref('')
 const today = new Date().toLocaleDateString(undefined, { day: 'numeric', month: 'long', year: 'numeric' })
-const fileBase = `hearsay-harbour-findings-${new Date().toISOString().slice(0, 10)}`
+const nameField = computed({ get: () => game.keeperName, set: v => game.setKeeperName(v) })
+const nameLabel = computed(() => (game.workshop ? 'Group or class name' : 'Keeper\'s name'))
+const slug = (t: string) => t.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 30)
+const fileBase = computed(() => ['hearsay-harbour-findings', slug(game.keeperName), new Date().toISOString().slice(0, 10)].filter(Boolean).join('-'))
 
 function download(href: string, name: string) {
   const a = document.createElement('a')
@@ -67,7 +70,7 @@ async function saveImage(kind: 'png' | 'pdf') {
     const embedded = window.self !== window.top
     if (kind === 'png') {
       if (embedded) preview.value = png
-      else download(png, `${fileBase}.png`)
+      else download(png, `${fileBase.value}.png`)
       return
     }
     const { jsPDF } = await import('jspdf')
@@ -79,7 +82,7 @@ async function saveImage(kind: 'png' | 'pdf') {
     const pdf = new jsPDF({ unit: 'mm', format: [w, h], orientation: h > w ? 'portrait' : 'landscape' })
     pdf.addImage(png, 'PNG', 0, 0, w, h)
     if (embedded) preview.value = png
-    else pdf.save(`${fileBase}.pdf`)
+    else pdf.save(`${fileBase.value}.pdf`)
   }
   finally {
     saving.value = false
@@ -104,9 +107,16 @@ const correct = computed(() => game.records.filter((r, i) => r.label === game.pi
 
 <template>
   <UiDialog kicker="Dusk at the harbour" title="Revisit the recorded findings" wide @close="game.close()">
+    <label class="name-row" for="recap-name">
+      {{ nameLabel }}
+      <input id="recap-name" v-model="nameField" type="text" maxlength="40" :placeholder="game.workshop ? 'Type your group\'s name' : 'Type your name'">
+    </label>
     <div ref="sheet" class="sheet-export">
       <p class="stamp">
         Hearsay Harbour · Recorded findings · {{ game.pack.title }} · {{ today }}{{ game.workshop ? ' · Workshop' : '' }}
+      </p>
+      <p v-if="game.keeperName" class="who">
+        {{ game.workshop ? 'Group' : 'Keeper' }}: <strong>{{ game.keeperName }}</strong>
       </p>
     <p class="lead">
       You pinned <strong>{{ correct }}</strong> of {{ game.pictures.length }} exactly right, and the trust garden has
@@ -207,6 +217,30 @@ const correct = computed(() => game.records.filter((r, i) => r.label === game.pi
 </template>
 
 <style scoped>
+.who {
+  margin: 0 0 8px;
+  font-size: 1.05rem;
+}
+.name-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 12px;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+.name-row input {
+  flex: 1;
+  min-width: 180px;
+  max-width: 320px;
+  padding: 6px 12px;
+  border-radius: 12px;
+  border: 2px solid var(--line);
+  background: #fff;
+  font: inherit;
+  font-weight: 400;
+}
 .lead {
   margin: 0 0 12px;
 }

@@ -102,6 +102,8 @@ export const useGame = defineStore('game', {
     /** Bumped when the scene should send the player somewhere (e.g. "go to the board"). */
     goto: null as PlaceId | null,
     muted: false,
+    /** The keeper's name, or the group's in workshop mode: on the certificate, the recap and the saved findings. */
+    keeperName: '',
     /** Camera zoom: below 1 is closer, above 1 shows more of the island. */
     zoom: 1,
     /** Bumped to ask the camera to recentre on the puffin. */
@@ -203,8 +205,8 @@ export const useGame = defineStore('game', {
     save() {
       if (!this.started || this.preview) return
       try {
-        const { packId, index, step, records, trust, workshop, muted } = this
-        localStorage.setItem(SAVE_KEY, JSON.stringify({ packId, index, step, records, trust, workshop, muted }))
+        const { packId, index, step, records, trust, workshop, muted, keeperName } = this
+        localStorage.setItem(SAVE_KEY, JSON.stringify({ packId, index, step, records, trust, workshop, muted, keeperName }))
       }
       catch {}
     },
@@ -237,6 +239,7 @@ export const useGame = defineStore('game', {
         this.trust = d.trust
         this.workshop = !!d.workshop
         this.muted = !!d.muted
+        this.keeperName = typeof d.keeperName === 'string' ? d.keeperName : ''
         return true
       }
       catch {
@@ -320,6 +323,12 @@ export const useGame = defineStore('game', {
       this.trust = 2
       this.step = 'arriving'
       this.dialog = null
+      this.keeperName = ''
+    },
+    /** Remember the name typed on the certificate or the recap, so it survives closing and reopening them. */
+    setKeeperName(name: string) {
+      this.keeperName = name.slice(0, 40)
+      this.save()
     },
   },
 })

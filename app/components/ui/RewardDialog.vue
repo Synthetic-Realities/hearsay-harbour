@@ -34,7 +34,7 @@ const rank = computed(() => {
   return game.workshop ? { ...r, title: PLURAL[count.value]! } : r
 })
 
-const name = ref('')
+const name = computed({ get: () => game.keeperName, set: v => game.setKeeperName(v) })
 const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches
 const CONFETTI = ['#ffb627', '#d1495b', '#6fb7ea', '#7fbf7a', '#c6b3e6', '#ffffff']
 const bits = reduced ? [] : Array.from({ length: 70 }, (_, i) => ({
