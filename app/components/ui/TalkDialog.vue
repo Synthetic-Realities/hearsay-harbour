@@ -66,7 +66,7 @@ const disagreeNames = computed(() => disagrees.value.map(id => VILLAGERS[id].nam
       </div>
     </div>
     <template #footer>
-      <button autofocus class="big-btn" data-continue @click="game.close()">
+      <button autofocus class="big-btn" @click="game.close()">
         Thanks, {{ v.name }}
       </button>
     </template>

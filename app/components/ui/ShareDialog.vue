@@ -23,7 +23,7 @@ onMounted(() => sfx.gull())
       <button class="big-btn quiet" @click="game.shareNow()">
         Share it anyway
       </button>
-      <button autofocus class="big-btn" data-continue @click="game.close()">
+      <button autofocus class="big-btn" @click="game.close()">
         Shoo, gull. I'll check first.
       </button>
     </template>

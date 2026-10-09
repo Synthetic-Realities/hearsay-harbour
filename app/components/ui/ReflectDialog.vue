@@ -10,12 +10,6 @@ const caption = ref<Caption | null>(null)
 
 const ORDER: Label[] = LABEL_ORDER
 
-// Once it's decided how it was made, glide down to the second question (handy on TVs and phones).
-const part2 = ref<HTMLElement>()
-watch(() => (game.workshop ? null : label.value), (l) => {
-  if (l) nextTick(() => part2.value?.scrollIntoView({ block: 'start', behavior: 'smooth' }))
-})
-
 /*
  * Workshop mode: the room's final show of hands decides how it was made. The label with the
  * most hands is pinned; a tie pins "Still unsure", because the room is genuinely split.
@@ -101,7 +95,7 @@ const captions = computed(() => {
             <span>{{ LABELS[l].blurb }}</span>
           </button>
         </div>
-        <h3 ref="part2">How would you describe it when you share it?</h3>
+        <h3>How would you describe it when you share it?</h3>
         <div class="captions" role="radiogroup" aria-label="Caption">
           <button
             v-for="c in captions"
@@ -119,7 +113,7 @@ const captions = computed(() => {
       </div>
     </div>
     <template #footer>
-      <button class="big-btn" data-continue :disabled="!pinned || !caption" @click="pinned && caption && game.pin(pinned, caption)">
+      <button class="big-btn" :disabled="!pinned || !caption" @click="pinned && caption && game.pin(pinned, caption)">
         {{ game.workshop ? 'Pin the room\'s answer' : 'Pin it to the board' }}
       </button>
     </template>

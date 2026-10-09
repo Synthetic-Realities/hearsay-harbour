@@ -99,21 +99,7 @@ https://synthetic-realities.github.io/hearsay-harbour/?arcade
 - **Back / Escape / Backspace / B (button 1):** close the window. A TV remote's Back button closes windows
   instead of leaving the game.
 - **Start (button 9):** press the main button at the bottom of the island.
-- **A TV remote's ⏩ and ⏪:** continue and go back, the same as the big side zones; ⏯ presses the
-  highlighted button. When a window isn't ready to continue yet but has more below (such as Reflect's second
-  question), the right-hand zone and ⏩ scroll down to it.
 - The **map** has a Go to button for every place, and hunch pebbles are dropped by aiming with the arrows.
-- **Big side zones:** every window has a large **‹ Back** zone on its left and a **› Continue** zone on its
-  right (labelled with what it will do, such as "Next" or "Thanks, Wren"), filling the space beside it. A TV
-  browser's on-screen pointer only has to land somewhere on that side. TV browsers (Fire TV's Silk, Samsung,
-  LG, Android TV and others) start in this mode automatically.
-- **Play together:** on a smart TV, workshop mode is called **Play together**, for a family or group round
-  the TV. The facilitator panel becomes short **Talk about it** questions, and the HUD says "Together".
-- **Tap-to-count votes:** on a smart TV, or anywhere in arcade mode, the room's show of hands uses big tiles
-  instead of the small − + counters. Each OK press (or tap) on a tile adds one hand, the running total
-  shows underneath, and a big **Undo** takes back the last hand (for as long as the page stays open).
-  The votes, the pinned top choice (a tie pins unsure), the reveal, the recap and the CSV are the same as in
-  workshop mode on a computer.
 
 Most cabinets send their joystick and buttons as arrow keys and keyboard keys, or as a standard gamepad;
 both work. Buttons can be remapped in `app/plugins/arcade.client.ts` once a cabinet's layout is known.

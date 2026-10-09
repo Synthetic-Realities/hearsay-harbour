@@ -2,13 +2,10 @@
 import { unlockAudio } from '~/audio/sfx'
 import { PACKS } from '~/utils/content'
 import { useGame } from '~/stores/game'
-import { isTvBrowser } from '~/utils/device'
 
 const game = useGame()
 game.peekSave()
 const dev = import.meta.dev
-// On a smart TV, workshop mode is "Play together": for a family or group round the TV.
-const tv = isTvBrowser()
 const packId = ref(game.packId)
 function start(workshop: boolean) {
   unlockAudio()
@@ -58,14 +55,11 @@ function resume() {
             {{ game.hasSave ? 'Start a new day' : 'Play' }}
           </button>
           <button class="big-btn quiet" @click="start(true)">
-            <UiIcon name="people" class="ic" /> {{ tv ? 'Play together' : 'Run a workshop' }}
+            <UiIcon name="people" class="ic" /> Run a workshop
           </button>
         </div>
-        <p v-if="!tv" class="small">
+        <p class="small">
           Workshop mode adds facilitator prompts and show-of-hands voting for a room.
-        </p>
-        <p v-else class="small">
-          Play together as a family or group: short questions to talk about, and everyone votes with a show of hands.
         </p>
         <div class="links">
           <button class="link" @click="game.open({ kind: 'phone' })">

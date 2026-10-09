@@ -3,7 +3,6 @@ import { sfx } from '~/audio/sfx'
 import { CHECKS, VILLAGERS } from '~/utils/content'
 import type { PlaceId } from '~/utils/world'
 import { useGame } from '~/stores/game'
-import { isTvBrowser } from '~/utils/device'
 
 /*
  * The welcome guide: a big, friendly tour before the day starts, reopenable any time
@@ -11,8 +10,6 @@ import { isTvBrowser } from '~/utils/device'
  */
 const props = defineProps<{ page?: number }>()
 const game = useGame()
-// Smart TVs call workshop mode "Play together".
-const tv = isTvBrowser()
 const el = ref<HTMLDialogElement>()
 const titleId = useId()
 
@@ -64,7 +61,7 @@ function onCancel(ev: Event) {
 </script>
 
 <template>
-  <dialog ref="el" class="guide" :class="{ tv: game.arcade }" :aria-labelledby="titleId" @cancel="onCancel" @keydown="onKey">
+  <dialog ref="el" class="guide" :aria-labelledby="titleId" @cancel="onCancel" @keydown="onKey">
     <div class="frame">
     <div ref="sheetEl" class="sheet">
       <div class="art">
@@ -151,12 +148,7 @@ function onCancel(ev: Event) {
             <li>Lost? The <strong>map</strong> and <strong>guide</strong> buttons at the top bring this back.</li>
           </ul>
           <p v-if="game.workshop" class="hand callout">
-            <template v-if="tv">
-              Playing together: everyone votes with a show of hands, and "Talk about it" questions appear on the right.
-            </template>
-            <template v-else>
-              Workshop mode is on: you'll be asked for the room's show of hands, and facilitator prompts appear on the right.
-            </template>
+            Workshop mode is on: you'll be asked for the room's show of hands, and facilitator prompts appear on the right.
           </p>
         </div>
 
@@ -190,12 +182,6 @@ function onCancel(ev: Event) {
     </div>
     <ScrollRail :target="railTarget" />
     </div>
-    <SideZones
-      :back-label="page > 0 ? 'Back' : (midGame ? 'Close' : 'Skip')"
-      :continue-label="last ? (midGame ? 'Back to the island' : 'Start the day') : 'Next'"
-      @back="page > 0 ? go(page - 1) : finish()"
-      @continue="last ? finish() : go(page + 1)"
-    />
   </dialog>
 </template>
 
@@ -209,10 +195,6 @@ function onCancel(ev: Event) {
   max-height: calc(100dvh - 24px);
   color: var(--ink);
   overflow: visible;
-}
-/* TV and arcade mode: leave room either side for the big back and next zones. */
-.guide.tv {
-  width: min(1040px, calc(100vw - 200px));
 }
 .guide[open] {
   animation: pop 320ms var(--ease);

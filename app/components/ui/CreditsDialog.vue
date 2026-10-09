@@ -69,7 +69,7 @@ const linkify = (s: string) => s.split(/(https?:\/\/\S+?)(?=[),.]?(?:\s|$))/g)
     </section>
 
     <template #footer>
-      <button autofocus class="big-btn" data-continue @click="game.close()">
+      <button autofocus class="big-btn" @click="game.close()">
         Back
       </button>
     </template>
