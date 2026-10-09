@@ -41,6 +41,8 @@ export default defineNuxtPlugin(() => {
   function candidates(root: HTMLElement) {
     return [...root.querySelectorAll<HTMLElement>(FOCUSABLE)].filter((el) => {
       if ((el as HTMLButtonElement).disabled || el.closest('[inert], [aria-hidden="true"]')) return false
+      // The green scroll bar's ▲ ▼ are for pointers and touch; the arrows scroll windows themselves.
+      if (el.closest('.rail-wrap')) return false
       if (root === document.body && el.closest('dialog')) return false
       const r = el.getBoundingClientRect()
       return r.width > 0 && r.height > 0 && getComputedStyle(el).visibility !== 'hidden'
@@ -78,14 +80,33 @@ export default defineNuxtPlugin(() => {
       if (start) show(start)
       return
     }
-    const a = cur.getBoundingClientRect()
+    let a: { top: number, bottom: number, left: number, right: number, width: number, height: number } = cur.getBoundingClientRect()
+    // The highlight was scrolled out of sight: measure from the edge of what's visible instead.
+    const homeBox = scroller(cur)
+    if (homeBox) {
+      const v = homeBox.getBoundingClientRect()
+      if (a.bottom < v.top + 4) a = { top: v.top, bottom: v.top + 1, left: v.left, right: v.right, width: v.width, height: 1 }
+      else if (a.top > v.bottom - 4) a = { top: v.bottom - 1, bottom: v.bottom, left: v.left, right: v.right, width: v.width, height: 1 }
+    }
     const ax = a.left + a.width / 2
     const ay = a.top + a.height / 2
     let best: HTMLElement | null = null
     let bestScore = Infinity
+    const curBox = scroller(cur)
+    // Inside a window's scrolling part with more to read that way: stay inside it until the end.
+    const moreThatWay = !!curBox && (dir === 'down'
+      ? curBox.scrollTop + curBox.clientHeight < curBox.scrollHeight - 4
+      : dir === 'up' && curBox.scrollTop > 4)
     for (const el of list) {
       if (el === cur) continue
       const b = el.getBoundingClientRect()
+      if (moreThatWay && scroller(el) !== curBox) continue
+      // Skip buttons scrolled out of sight in another part of the window (from inside it, scrolling reaches them).
+      const elBox = scroller(el)
+      if (elBox && elBox !== curBox) {
+        const v = elBox.getBoundingClientRect()
+        if (b.bottom < v.top + 4 || b.top > v.bottom - 4) continue
+      }
       const bx = b.left + b.width / 2
       const by = b.top + b.height / 2
       // How far along the direction, and how far off to the side.
@@ -101,21 +122,41 @@ export default defineNuxtPlugin(() => {
         best = el
       }
     }
+    // From a button outside the window's scrolling part (the footer, the header): if that part sits
+    // between here and the next button and has more to read that way, scroll it rather than jump over it.
+    if (!homeBox && (dir === 'up' || dir === 'down')) {
+      const boxes = [...root.querySelectorAll<HTMLElement>('*')].filter(n => n.scrollHeight > n.clientHeight + 4 && /auto|scroll/.test(getComputedStyle(n).overflowY))
+      for (const b of boxes) {
+        const v = b.getBoundingClientRect()
+        const between = dir === 'up' ? v.bottom <= a.top + 2 && (!best || best.getBoundingClientRect().bottom <= v.top + 2) : v.top >= a.bottom - 2 && (!best || best.getBoundingClientRect().top >= v.bottom - 2)
+        const more = dir === 'up' ? b.scrollTop > 4 : b.scrollTop + b.clientHeight < b.scrollHeight - 4
+        if (between && more) {
+          b.scrollBy({ top: (dir === 'down' ? 1 : -1) * b.clientHeight * 0.6, behavior: 'smooth' })
+          return
+        }
+      }
+    }
     const box = scroller(cur)
-    // Scroll first if the window has more to show in that direction before the next button.
     if (box && (dir === 'up' || dir === 'down')) {
       const canScroll = dir === 'down' ? box.scrollTop + box.clientHeight < box.scrollHeight - 4 : box.scrollTop > 4
       const boxRect = box.getBoundingClientRect()
-      const bestVisible = best && (() => {
-        const r = best!.getBoundingClientRect()
-        return r.top >= boxRect.top - 2 && r.bottom <= boxRect.bottom + 2
-      })()
-      if (canScroll && !bestVisible) {
-        const step = Math.min(box.clientHeight * 0.6, best ? Math.abs(best.getBoundingClientRect().top - a.top) : Infinity)
-        box.scrollBy({ top: (dir === 'down' ? 1 : -1) * Math.max(80, step), behavior: 'smooth' })
-        if (!best) return
-        const r = best.getBoundingClientRect()
-        if (r.top > boxRect.bottom + box.clientHeight * 0.6 || r.bottom < boxRect.top - box.clientHeight * 0.6) return
+      // How far beyond the visible part of the window the next button sits.
+      const beyond = best
+        ? (() => {
+            const r = best.getBoundingClientRect()
+            return dir === 'down' ? r.bottom - boxRect.bottom : boxRect.top - r.top
+          })()
+        : Infinity
+      // A long stretch of reading before the next button (or none at all): scroll, keeping the highlight.
+      if (canScroll && beyond > box.clientHeight * 0.75) {
+        box.scrollBy({ top: (dir === 'down' ? 1 : -1) * box.clientHeight * 0.6, behavior: 'smooth' })
+        return
+      }
+      // Otherwise move to it, bringing it into the middle of the window.
+      if (best) {
+        best.focus({ preventScroll: true })
+        if (beyond > 0) best.scrollIntoView({ block: 'center', behavior: 'smooth' })
+        return
       }
     }
     if (best) show(best)
