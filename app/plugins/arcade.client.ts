@@ -15,6 +15,7 @@
  * by plugging in a gamepad. TV browsers start with it on.
  */
 import { useGame } from '~/stores/game'
+import { isTvBrowser } from '~/utils/device'
 
 type Dir = 'up' | 'down' | 'left' | 'right'
 const ARROWS: Record<string, Dir> = { ArrowUp: 'up', ArrowDown: 'down', ArrowLeft: 'left', ArrowRight: 'right' }
@@ -29,7 +30,7 @@ export default defineNuxtPlugin(() => {
     chosen = localStorage.getItem('hearsay-harbour:arcade') !== null
   }
   catch {}
-  if (!chosen && /AFT[A-Z]|SMART-TV|SmartTV|Tizen|Web0S|webOS|NetCast|BRAVIA|Android TV|GoogleTV|CrKey|HbbTV|Roku|AppleTV|PhilipsTV|VIDAA/i.test(navigator.userAgent)) game.setArcade(true)
+  if (!chosen && isTvBrowser()) game.setArcade(true)
   watch(() => game.arcade, on => document.documentElement.classList.toggle('arcade', on), { immediate: true })
 
   /** Where the highlight can go: the open window, or the screen behind when none is open. */

@@ -2,10 +2,13 @@
 import { unlockAudio } from '~/audio/sfx'
 import { PACKS } from '~/utils/content'
 import { useGame } from '~/stores/game'
+import { isTvBrowser } from '~/utils/device'
 
 const game = useGame()
 game.peekSave()
 const dev = import.meta.dev
+// Smart TVs don't offer workshop mode: its room-vote counters are too fiddly with a remote.
+const tv = isTvBrowser()
 const packId = ref(game.packId)
 function start(workshop: boolean) {
   unlockAudio()
@@ -54,12 +57,15 @@ function resume() {
           <button class="big-btn" :class="{ quiet: game.hasSave }" :autofocus="!game.hasSave" @click="start(false)">
             {{ game.hasSave ? 'Start a new day' : 'Play' }}
           </button>
-          <button class="big-btn quiet" @click="start(true)">
+          <button v-if="!tv" class="big-btn quiet" @click="start(true)">
             <UiIcon name="people" class="ic" /> Run a workshop
           </button>
         </div>
-        <p class="small">
+        <p v-if="!tv" class="small">
           Workshop mode adds facilitator prompts and show-of-hands voting for a room.
+        </p>
+        <p v-else class="small">
+          To run a workshop with room voting, open the game on a computer or tablet connected to the TV or projector.
         </p>
         <div class="links">
           <button class="link" @click="game.open({ kind: 'phone' })">
